@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/json-simple.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/virtjdbc3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/aduna-commons-io-2.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/aduna-commons-lang-2.3.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/aduna-commons-net-2.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/aduna-commons-text-2.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/aduna-commons-xml-2.2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/log4j-1.2.14.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/serializer.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-config-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-console-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-http-client-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-http-protocol-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-http-server-spring-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-model-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-query-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-queryalgebra-evaluation-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-queryalgebra-model-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-queryparser-api-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-queryparser-serql-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-queryparser-sparql-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-queryresultio-api-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-queryresultio-binary-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-queryresultio-sparqljson-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-queryresultio-sparqlxml-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-queryresultio-text-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-repository-api-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-repository-contextaware-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-repository-dataset-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-repository-event-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-repository-http-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-repository-manager-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-repository-sail-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-repository-sparql-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-rio-api-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-rio-binary-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-rio-n3-2.2.4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-rio-n3-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-rio-ntriples-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-rio-rdfxml-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-rio-trig-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-rio-trix-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-rio-turtle-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-runtime-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-sail-api-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-sail-inferencer-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-sail-memory-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-sail-nativerdf-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-sail-rdbms-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/sesame-util-2.6.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/slf4j-api-1.6.1.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/sesame/virt_sesame2.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/jena/arq.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/jena/axis.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/jena/commons-logging.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/jena/icu4j_3_4.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/jena/iri.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/jena/jena.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/jena/virt_jena.jar"/>
+	<classpathentry kind="lib" path="C:/Users/rousakis/Documents/Eclipse Workspace/DiachronForth/libs/jena/xercesImpl.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
