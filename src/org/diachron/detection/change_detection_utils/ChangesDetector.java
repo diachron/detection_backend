@@ -127,7 +127,7 @@ public class ChangesDetector {
             query = query.replaceAll("'v2'", "'" + newVersion + "'");
             query = query.replaceAll("<v1>", "<" + oldVersion + ">");
             query = query.replaceAll("<v2>", "<" + newVersion + ">");
-            System.out.println("Detecting " + simpleChange);
+//            System.out.println("Detecting " + simpleChange);
             jdbc.executeUpdateQuery("sparql " + query, false);
         }
         System.out.println("DONE in " + (System.currentTimeMillis() - start));

@@ -67,6 +67,7 @@ public class JDBCVirtuosoRep {
         Class.forName("virtuoso.jdbc3.Driver");
         conn = DriverManager.getConnection("jdbc:virtuoso://" + sa[0] + ":" + sa[1] + "/charset=UTF-8/log_enable=2", sa[2], sa[3]);
         statement = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        inputStream.close();
     }
 
     public JDBCVirtuosoRep(Properties prop) throws ClassNotFoundException, SQLException, IOException {
@@ -152,7 +153,9 @@ public class JDBCVirtuosoRep {
     }
 
     /**
-     * Returns the number of the triples contained in the named graph given as parameter.
+     * Returns the number of the triples contained in the named graph given as
+     * parameter.
+     *
      * @param graph The named graph whose triples are counted.
      * @return The number of triples.
      */
@@ -176,11 +179,14 @@ public class JDBCVirtuosoRep {
     }
 
     /**
-     * Imports a single RDF/XML file into Virtuoso. The file must must belong within the machine which hosts Virtuoso as 
-     * it is a server side import.  
-     * @param filename The full path of the file which contains the RDF/XML data.
+     * Imports a single RDF/XML file into Virtuoso. The file must must belong
+     * within the machine which hosts Virtuoso as it is a server side import.
+     *
+     * @param filename The full path of the file which contains the RDF/XML
+     * data.
      * @param graph The graph which will receive the data.
-     * @param logging A boolean variable which denotes whether the import execution time will be printed or not.
+     * @param logging A boolean variable which denotes whether the import
+     * execution time will be printed or not.
      */
     public void importSingleRDFFile(String filename, String graph, boolean logging) {
         String query = "RDF_LOAD_RDFXML_MT(file_to_string_output('" + filename + "'), '', '" + graph + "')";
@@ -188,11 +194,13 @@ public class JDBCVirtuosoRep {
     }
 
     /**
-     * Imports a single N3 file into Virtuoso. The file must must belong within the machine which hosts Virtuoso as 
-     * it is a server side import.  
+     * Imports a single N3 file into Virtuoso. The file must must belong within
+     * the machine which hosts Virtuoso as it is a server side import.
+     *
      * @param filename The full path of the file which contains the N3 data.
      * @param graph The graph which will receive the data.
-     * @param logging A boolean variable which denotes whether the import execution time will be printed or not.
+     * @param logging A boolean variable which denotes whether the import
+     * execution time will be printed or not.
      */
     public void importSingleN3File(String filename, String graph, boolean logging) {
         String query = "TTLP_MT(file_to_string_output('" + filename + "'), '', '" + graph + "')";
@@ -201,8 +209,10 @@ public class JDBCVirtuosoRep {
 
     /**
      * Clears the named graph given as parameter.
-     * @param graph The named graph to be cleared. 
-     * @param logging A boolean variable which denotes whether the clear execution time will be printed or not.
+     *
+     * @param graph The named graph to be cleared.
+     * @param logging A boolean variable which denotes whether the clear
+     * execution time will be printed or not.
      */
     public void clearGraph(String graph, boolean logging) {
         executeUpdateQuery("SPARQL CLEAR GRAPH <" + graph + ">", logging);
@@ -221,7 +231,8 @@ public class JDBCVirtuosoRep {
     }
 
     /**
-     * Copies the contents of a named graph into another. 
+     * Copies the contents of a named graph into another.
+     *
      * @param source The source named graph.
      * @param destination The destination named graph.
      */
@@ -238,6 +249,7 @@ public class JDBCVirtuosoRep {
 
     /**
      * Renames a named graph.
+     *
      * @param oldName The old name of the named graph.
      * @param newName The new name of the named graph.
      */
@@ -248,4 +260,4 @@ public class JDBCVirtuosoRep {
         executeUpdateQuery(query, true);
     }
 
- }
+}

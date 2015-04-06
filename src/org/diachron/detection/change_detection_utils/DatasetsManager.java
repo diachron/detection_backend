@@ -5,13 +5,17 @@
  */
 package org.diachron.detection.change_detection_utils;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Properties;
 import org.diachron.detection.repositories.JDBCVirtuosoRep;
+import org.diachron.detection.repositories.SesameVirtRep;
+import org.openrdf.rio.RDFFormat;
 
 /**
  * This class is responsible for the management of various dataset versions
@@ -22,7 +26,8 @@ import org.diachron.detection.repositories.JDBCVirtuosoRep;
  */
 public class DatasetsManager {
 
-    private JDBCVirtuosoRep rep;
+    private JDBCVirtuosoRep jdbc;
+    private SesameVirtRep sesame;
 
     /**
      * Creates a new DatasetManager instance w.r.t. a properties file. The
@@ -33,15 +38,22 @@ public class DatasetsManager {
      * @throws Exception
      */
     public DatasetsManager(String propFile) throws Exception {
-        rep = new JDBCVirtuosoRep(propFile);
+        Properties prop = new Properties();
+        InputStream inputStream;
+        inputStream = new FileInputStream("config.properties");
+        prop.load(inputStream);
+        jdbc = new JDBCVirtuosoRep(propFile);
+        sesame = new SesameVirtRep(propFile);
+        inputStream.close();
     }
 
     public DatasetsManager(Properties propFile) throws Exception {
-        rep = new JDBCVirtuosoRep(propFile);
+        jdbc = new JDBCVirtuosoRep(propFile);
+        sesame = new SesameVirtRep(propFile);
     }
 
     public DatasetsManager(JDBCVirtuosoRep jdbc) throws Exception {
-        rep = jdbc;
+        jdbc = jdbc;
     }
 
     /**
@@ -61,7 +73,7 @@ public class DatasetsManager {
                 + "<" + datasetSrc + "> rdfs:member ?o ."
                 + "optional {?o rdfs:label ?lab.}"
                 + "} }";
-        rep.executeUpdateQuery(update, false);
+        jdbc.executeUpdateQuery(update, false);
     }
 
     /**
@@ -78,7 +90,7 @@ public class DatasetsManager {
                 + "OPTIONAL {<" + namedgraph + "> rdfs:label ?l.}\n"
                 + "}\n"
                 + "}";
-        rep.executeUpdateQuery(update, false);
+        jdbc.executeUpdateQuery(update, false);
     }
 
     /**
@@ -90,7 +102,7 @@ public class DatasetsManager {
      */
     public void deleteVersion(String datasetUri, String namedgraph) {
         deleteVersionFromDataset(datasetUri, namedgraph);
-        rep.clearGraph(namedgraph, true);
+        jdbc.clearGraph(namedgraph, true);
     }
 
     /**
@@ -116,7 +128,7 @@ public class DatasetsManager {
                 + "<" + datasetUri + "> rdfs:member <" + namedgraph + ">."
                 + s
                 + "}";
-        rep.executeUpdateQuery(update, false);
+        jdbc.executeUpdateQuery(update, false);
     }
 
     /**
@@ -154,9 +166,9 @@ public class DatasetsManager {
                 + "<" + datasetUri + "> rdfs:member ?version. "
                 + "BIND(REPLACE(str(?version), '^.*(#|/)', \"\") AS ?num). "
                 + "OPTIONAL {?version rdfs:label ?label.}"
-                + "} order by xsd:integer(?num)";
+                + "} order by xsd:float(?num)";
         try {
-            ResultSet results = rep.executeSparqlQuery(query, false);
+            ResultSet results = jdbc.executeSparqlQuery(query, false);
             if (!results.next()) {
                 return versions;
             }
@@ -195,7 +207,7 @@ public class DatasetsManager {
                 + "OPTIONAL {?version rdfs:label ?label.}"
                 + "} order by xsd:integer(?num)";
         try {
-            ResultSet results = rep.executeSparqlQuery(query, false);
+            ResultSet results = jdbc.executeSparqlQuery(query, false);
             if (!results.next()) {
                 return versions;
             }
@@ -247,13 +259,51 @@ public class DatasetsManager {
      * @return
      */
     public JDBCVirtuosoRep getJDBCVirtuosoRep() {
-        return rep;
+        return jdbc;
+    }
+
+    /**
+     * Returns an instance of the {@link SesameVirtRep} connection.
+     *
+     * @return
+     */
+    public SesameVirtRep getSesameVirtRep() {
+        return sesame;
     }
 
     /**
      * Terminates the current JDBC connection.
      */
     public void terminate() {
-        rep.terminate();
+        jdbc.terminate();
+        sesame.terminate();
+    }
+
+    /**
+     * Imports a dataset version and an attached label, expressed in an RDF
+     * format (e.g., RDF/XML, N3 etc.), within a specific namedgraph within
+     * Virtuoso. Moreover, the method attaches the inserted dataset version to a
+     * specific dataset URI.
+     *
+     * @param versionFilename The file which contains the RDF data which will be
+     * inserted.
+     * @param format The RDF format of the inserted data.
+     * @param versionNamedgraph The namedgraph which will host the inserted
+     * data.
+     * @param label A human understandable label which describes the inserted
+     * dataset.
+     * @param datasetUri The dataset which is correlated with the inserted
+     * dataset version.
+     */
+    public void insertDatasetVersion(String versionFilename, RDFFormat format, String versionNamedgraph, String label, String datasetUri) {
+        try {
+            sesame.importFile(versionFilename, format, versionNamedgraph);
+            sesame.addTriple(datasetUri, "http://www.w3.org/2000/01/rdf-schema#member", versionNamedgraph, "http://datasets");
+            if (label != null) {
+                sesame.addLitTriple(versionNamedgraph, "http://www.w3.org/2000/01/rdf-schema#label", label, "http://datasets");
+            }
+        } catch (Exception ex) {
+            System.out.println("Exception: " + ex.getMessage());
+        }
     }
 }

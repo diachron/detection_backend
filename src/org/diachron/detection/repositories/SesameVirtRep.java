@@ -5,7 +5,11 @@ package org.diachron.detection.repositories;
  * and open the template in the editor.
  */
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.Properties;
 import org.openrdf.model.Literal;
@@ -69,8 +73,24 @@ public class SesameVirtRep {
         con.setAutoCommit(false);
     }
 
+    public SesameVirtRep(String propFile) throws RepositoryException, FileNotFoundException, IOException {
+        Properties prop = new Properties();
+        InputStream inputStream;
+        inputStream = new FileInputStream(propFile);
+        prop.load(inputStream);
+        String virt_instance = prop.getProperty("Repository_IP");
+        String usr = prop.getProperty("Repository_Username");
+        String pwd = prop.getProperty("Repository_Password");
+        int port = Integer.parseInt(prop.getProperty("Repository_Port"));
+        repository = new VirtuosoRepository("jdbc:virtuoso://" + virt_instance + ":" + port + "/charset=UTF-8/log_enable=2", usr, pwd);
+        con = repository.getConnection();
+        con.setAutoCommit(false);
+        inputStream.close();
+    }
+
     /**
      * Returns the instance of the current RepositoryConnection.
+     *
      * @return
      */
     public RepositoryConnection getCon() {
@@ -91,6 +111,7 @@ public class SesameVirtRep {
 
     /**
      * Clears the named graph given as parameter.
+     *
      * @param graph The named graph to be cleared.
      * @throws Exception
      */
@@ -101,8 +122,8 @@ public class SesameVirtRep {
 
     /**
      * Executes a SPARQL select query given as parameter.
-     * 
-     * @param query The SPARQL select query.
+     *
+     * @param sparql The SPARQL select query.
      * @return
      * @throws RepositoryException
      * @throws MalformedQueryException
@@ -115,8 +136,10 @@ public class SesameVirtRep {
     }
 
     /**
-     * 
-     * Returns the number of the triples contained in the named graph given as parameter.
+     *
+     * Returns the number of the triples contained in the named graph given as
+     * parameter.
+     *
      * @param graph The named graph whose triples are counted.
      * @return The number of triples.
      * @throws Exception
@@ -138,9 +161,11 @@ public class SesameVirtRep {
 
     /**
      * Exports the contents of a named graph into a file in various formats.
-     * @param filename The filename in which the export data will be stored. The filename can be either in the Virtuoso-host 
-     * machine of not. 
-     * @param format The format of the exported data e.g., RDF/XML, N3, N-Triples etc.
+     *
+     * @param filename The filename in which the export data will be stored. The
+     * filename can be either in the Virtuoso-host machine of not.
+     * @param format The format of the exported data e.g., RDF/XML, N3,
+     * N-Triples etc.
      * @param graphSource The named graph whose data will be exported.
      * @throws Exception
      */
@@ -151,9 +176,12 @@ public class SesameVirtRep {
     }
 
     /**
-     * Imports a file with RDF contents withing Virtuoso and the named graph given as parameter.
-     * @param filename The filename which contains the data to be imported. 
-     * @param format The format of the give data e.g., RDF/XML, N3, N-Triples etc.
+     * Imports a file with RDF contents withing Virtuoso and the named graph
+     * given as parameter.
+     *
+     * @param filename The filename which contains the data to be imported.
+     * @param format The format of the give data e.g., RDF/XML, N3, N-Triples
+     * etc.
      * @param graphDest The named graph destination.
      * @throws Exception
      */
@@ -165,6 +193,7 @@ public class SesameVirtRep {
 
     /**
      * Inserts a (URI) triple into a named graph.
+     *
      * @param s The subject URI of the triple.
      * @param p The predicate URI of the triple.
      * @param o The object URI triple.
@@ -184,6 +213,7 @@ public class SesameVirtRep {
 
     /**
      * Inserts a (Literal) triple into a named graph.
+     *
      * @param s The subject URI of the triple.
      * @param p The predicate URI of the triple.
      * @param o The string literal object of the triple.
@@ -203,6 +233,7 @@ public class SesameVirtRep {
 
     /**
      * Inserts a (Literal) triple into a named graph.
+     *
      * @param s The subject URI of the triple.
      * @param p The predicate URI of the triple.
      * @param o The double literal object of the triple.
@@ -219,4 +250,4 @@ public class SesameVirtRep {
             System.out.println("Exception: " + ex.getMessage() + " occured .");
         }
     }
- }
+}

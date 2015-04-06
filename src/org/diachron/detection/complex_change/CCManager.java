@@ -702,7 +702,8 @@ public class CCManager {
             if (!sChange.getJoinFilters().isEmpty()) {
                 try {
                     for (String filter : sChange.getJoinFilters()) {
-                        String[] joinFilter = filter.split("=");
+                        String oper = fetchOperator(filter);
+                        String[] joinFilter = filter.split(oper);
                         String s0 = joinFilter[0].trim();
                         String s1 = joinFilter[1].trim();
                         String[] arr0 = s0.split(":-");

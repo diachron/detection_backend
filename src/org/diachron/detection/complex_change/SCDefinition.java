@@ -79,6 +79,7 @@ public class SCDefinition {
                 + "\"Simple_Change_Uri\" : \"" + sChangeUri + "\", \n"
                 + "\"Is_Optional\" : " + isOptional + ", \n"
                 + "\"Selection_Filter\" : \"" + selectionFilters + "\", \n"
+                + "\"Join_Filter\" : \"" + joinFilters + "\", \n"
                 + "}";
     }
 
@@ -88,6 +89,7 @@ public class SCDefinition {
         json.put("Simple_Change_Uri", sChangeUri);
         json.put("Is_Optional", isOptional);
         json.put("Selection_Filter", selectionFilters);
+        json.put("Join_Filter", joinFilters);
         return json;
     }
 }
