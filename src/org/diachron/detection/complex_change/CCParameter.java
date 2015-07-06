@@ -5,8 +5,9 @@
 package org.diachron.detection.complex_change;
 
 /**
- * This class represents a complex change parameter. Each complex change parameter 
- * is connected with a property and has a name as well. 
+ * This class represents a complex change parameter. Each complex change
+ * parameter is connected with a property and has a name as well.
+ *
  * @author rousakis
  */
 public class CCParameter {
@@ -50,5 +51,10 @@ public class CCParameter {
 
     public void setScBoundParam(String scBoundParam) {
         this.scBoundParam = scBoundParam;
+    }
+
+    @Override
+    public String toString() {
+        return "CCParameter{" + "paramProp=" + paramProp + ", paramNameString=" + paramNameString + ", scBoundParam=" + scBoundParam + '}';
     }
 }

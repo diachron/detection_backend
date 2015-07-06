@@ -59,8 +59,7 @@ public class SesameVirtRep {
      * Creates a new Virtuoso connection. The credentials are taken from a
      * properties file.
      *
-     * @param propFile The properties file instance
-     * @throws ClassNotFoundException
+     * @param prop The properties file instance
      * @throws RepositoryException
      */
     public SesameVirtRep(Properties prop) throws RepositoryException {
@@ -71,21 +70,6 @@ public class SesameVirtRep {
         repository = new VirtuosoRepository("jdbc:virtuoso://" + virt_instance + ":" + port + "/charset=UTF-8/log_enable=2", usr, pwd);
         con = repository.getConnection();
         con.setAutoCommit(false);
-    }
-
-    public SesameVirtRep(String propFile) throws RepositoryException, FileNotFoundException, IOException {
-        Properties prop = new Properties();
-        InputStream inputStream;
-        inputStream = new FileInputStream(propFile);
-        prop.load(inputStream);
-        String virt_instance = prop.getProperty("Repository_IP");
-        String usr = prop.getProperty("Repository_Username");
-        String pwd = prop.getProperty("Repository_Password");
-        int port = Integer.parseInt(prop.getProperty("Repository_Port"));
-        repository = new VirtuosoRepository("jdbc:virtuoso://" + virt_instance + ":" + port + "/charset=UTF-8/log_enable=2", usr, pwd);
-        con = repository.getConnection();
-        con.setAutoCommit(false);
-        inputStream.close();
     }
 
     /**
@@ -176,7 +160,7 @@ public class SesameVirtRep {
     }
 
     /**
-     * Imports a file with RDF contents withing Virtuoso and the named graph
+     * Imports a file with RDF contents within Virtuoso and the named graph
      * given as parameter.
      *
      * @param filename The filename which contains the data to be imported.
@@ -249,5 +233,14 @@ public class SesameVirtRep {
         } catch (RepositoryException ex) {
             System.out.println("Exception: " + ex.getMessage() + " occured .");
         }
+    }
+
+    public static void main(String[] args) throws Exception {
+//        SesameVirtRep sesame = new SesameVirtRep("config.properties");
+//        sesame.exportToFile("version_2.45.rdf", RDFFormat.RDFXML, "http://original/efo/2.45");
+//        sesame.exportToFile("version_2.46.rdf", RDFFormat.RDFXML, "http://original/efo/2.46");
+//        sesame.clearGraphContents("http://original/efo/2.45");
+//        sesame.clearGraphContents("http://original/efo/2.46");
+//        sesame.terminate();
     }
 }

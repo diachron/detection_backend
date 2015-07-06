@@ -7,7 +7,7 @@ package org.diachron.detection.complex_change;
 
 import java.util.ArrayList;
 import java.util.List;
-import org.diachron.detection.change_detection_utils.OntologicalSimpleChangesType;
+import org.diachron.detection.utils.OntologicalSimpleChangesType;
 import org.json.simple.JSONObject;
 
 /**

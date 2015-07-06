@@ -4,11 +4,8 @@
  */
 package org.diachron.detection.complex_change;
 
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.sql.ResultSet;
-import org.diachron.detection.change_detection_utils.OntologicalSimpleChangesType;
+import org.diachron.detection.utils.OntologicalSimpleChangesType;
 import org.diachron.detection.complex_change.CCDefinitionError.CODE;
 import org.openrdf.repository.RepositoryException;
 import org.diachron.detection.repositories.JDBCVirtuosoRep;
@@ -39,6 +36,7 @@ public class CCManager {
     private String cChangeSparql;
     private String ccName;
     private Double ccPriority;
+    private String ccDescription;
     private LinkedHashMap<String, CCParameter> cChangeParameters;
     private String changesOntologySchema;
     private List<SCDefinition> sChanges;
@@ -57,55 +55,25 @@ public class CCManager {
      * @throws RepositoryException
      * @throws SQLException
      */
-    public CCManager(Properties prop, String changesOntologySchema) throws ClassNotFoundException, RepositoryException, SQLException {
-        try {
-            String ip = prop.getProperty("Repository_IP");
-            String username = prop.getProperty("Repository_Username");
-            String password = prop.getProperty("Repository_Password");
-            int port = Integer.parseInt(prop.getProperty("Repository_Port"));
-            this.jdbcRep = new JDBCVirtuosoRep(ip, port, username, password);
-            this.sesameRepos = new SesameVirtRep(ip, port, username, password);
-            if (changesOntologySchema == null) {
-                this.changesOntologySchema = prop.getProperty("Changes_Ontology_Schema");
-            } else {
-                this.changesOntologySchema = changesOntologySchema;
-            }
-            this.cChangeParameters = new LinkedHashMap<>();
-            this.sChanges = new ArrayList<>();
-            this.ccDefError = new CCDefinitionError();
-            this.versionFilters = new LinkedHashMap<>();
-        } catch (NumberFormatException ex) {
-            System.out.println("Exception: " + ex.toString());
+    public CCManager(Properties prop, String changesOntologySchema) throws Exception {
+        String ip = prop.getProperty("Repository_IP");
+        String username = prop.getProperty("Repository_Username");
+        String password = prop.getProperty("Repository_Password");
+        int port = Integer.parseInt(prop.getProperty("Repository_Port"));
+        this.jdbcRep = new JDBCVirtuosoRep(ip, port, username, password);
+        this.sesameRepos = new SesameVirtRep(ip, port, username, password);
+        if (changesOntologySchema == null) {
+            this.changesOntologySchema = prop.getProperty("Changes_Ontology_Schema");
+        } else {
+            this.changesOntologySchema = changesOntologySchema;
         }
+        this.cChangeParameters = new LinkedHashMap<>();
+        this.sChanges = new ArrayList<>();
+        this.ccDefError = new CCDefinitionError();
+        this.versionFilters = new LinkedHashMap<>();
     }
 
-    public CCManager(String propFile, String changesOntologySchema) throws ClassNotFoundException, IOException, RepositoryException, SQLException {
-        try {
-            Properties prop = new Properties();
-            InputStream inputStream = new FileInputStream(propFile);
-            prop.load(inputStream);
-            String ip = prop.getProperty("Repository_IP");
-            String username = prop.getProperty("Repository_Username");
-            String password = prop.getProperty("Repository_Password");
-            int port = Integer.parseInt(prop.getProperty("Repository_Port"));
-            this.jdbcRep = new JDBCVirtuosoRep(ip, port, username, password);
-            this.sesameRepos = new SesameVirtRep(ip, port, username, password);
-            if (changesOntologySchema == null) {
-                this.changesOntologySchema = prop.getProperty("Changes_Ontology_Schema");
-            } else {
-                this.changesOntologySchema = changesOntologySchema;
-            }
-            this.cChangeParameters = new LinkedHashMap<>();
-            this.sChanges = new ArrayList<>();
-            this.ccDefError = new CCDefinitionError();
-            this.versionFilters = new LinkedHashMap<>();
-            inputStream.close();
-        } catch (NumberFormatException ex) {
-            System.out.println("Exception: " + ex.toString());
-        }
-    }
-
-    public CCManager(Properties prop) throws ClassNotFoundException, IOException, RepositoryException, SQLException {
+    public CCManager(Properties prop) throws Exception {
         try {
             String ip = prop.getProperty("Repository_IP");
             String username = prop.getProperty("Repository_Username");
@@ -133,7 +101,7 @@ public class CCManager {
      * @param name The complex change name.
      * @return True if the name is valid, false otherwise.
      */
-    private boolean isValidCCName(String name) {
+    public boolean isValidCCName(String name) {
         String sparql = "select * from <" + changesOntologySchema + "> where { ?cc co:name \"" + name + "\"}";
         ResultSet results = jdbcRep.executeSparqlQuery(sparql, false);
         try {
@@ -185,6 +153,7 @@ public class CCManager {
     /**
      * Sets the priority of a complex change.
      *
+     * @param ccPriority
      * @param ccName The complex change name.
      */
     public void setCcPriority(Double ccPriority) {
@@ -195,12 +164,21 @@ public class CCManager {
         }
     }
 
+    /**
+     * Sets a human-readable description for the complex change/
+     *
+     * @param description The complex change description.
+     */
+    public void setCcDescription(String description) {
+        this.ccDescription = description;
+    }
+
     public CCDefinitionError getCcDefError() {
         return ccDefError;
     }
 
     public void setCcDefError(String descr, CODE code) {
-        deleteComplexChange(changesOntologySchema, ccName);
+        deleteComplexChange(changesOntologySchema, ccName, false);
         this.ccDefError.setDescription(descr);
         this.ccDefError.setErrorCode(code);
     }
@@ -265,21 +243,24 @@ public class CCManager {
         namespaces.put("co", "http://www.diachron-fp7.eu/changes/");
         namespaces.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
         namespaces.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-        String name = namespaces.get("co") + ccName.replaceAll(" ", "_");
-        this.cChangeURI = name;
-        sesameRepos.addTriple(name, namespaces.get("rdfs") + "subClassOf", namespaces.get("co") + "Complex_Change", changesOntologySchema);
-        sesameRepos.addLitTriple(name, namespaces.get("co") + "name", ccName, changesOntologySchema);
-        sesameRepos.addLitTriple(name, namespaces.get("co") + "priority", ccPriority, changesOntologySchema);
+        String ccUri = namespaces.get("co") + ccName.replaceAll(" ", "_");
+        this.cChangeURI = ccUri;
+        sesameRepos.addTriple(ccUri, namespaces.get("rdfs") + "subClassOf", namespaces.get("co") + "Complex_Change", changesOntologySchema);
+        sesameRepos.addLitTriple(ccUri, namespaces.get("co") + "name", ccName, changesOntologySchema);
+        sesameRepos.addLitTriple(ccUri, namespaces.get("co") + "priority", ccPriority, changesOntologySchema);
+        if (this.ccDescription != null) {
+            sesameRepos.addLitTriple(ccUri, namespaces.get("co") + "description", this.ccDescription, changesOntologySchema);
+        }
         for (SCDefinition sc : sChanges) {
-            sesameRepos.addTriple(name, namespaces.get("co") + "consumes", namespaces.get("co") + sc.getsChangeType(), changesOntologySchema);
+            sesameRepos.addTriple(ccUri, namespaces.get("co") + "consumes", namespaces.get("co") + sc.getsChangeType(), changesOntologySchema);
         }
         /////
         int i = 1;
         for (String param : cChangeParameters.keySet()) {
             CCParameter parameter = cChangeParameters.get(param);
-            String pProp = name + "/p" + i;
+            String pProp = ccUri + "/p" + i;
             parameter.setParamProp(pProp);
-            addCCParamTriples(pProp, namespaces, name, parameter.getParamNameString());  //insert triples into virtuoso
+            addCCParamTriples(pProp, namespaces, ccUri, parameter.getParamNameString());  //insert triples into virtuoso
             i++;
         }
         if (cChangeParameters.isEmpty()) {
@@ -315,18 +296,17 @@ public class CCManager {
         //////
         this.cChangeSparql = createSPARQLQuery();
         if (this.cChangeSparql == null) {
-            deleteComplexChange(changesOntologySchema, ccName);
+            deleteComplexChange(changesOntologySchema, ccName, false);
             return ccDefError;
         }
-//        System.out.println(this.cChangeSparql);
         if (!isValidSPARQL()) {
             setCcDefError("The constructed SPARQL query is invalid.", CODE.INVALID_SPARQL);
             return ccDefError;
         } else {
-            sesameRepos.addLitTriple(name, namespaces.get("co") + "sparql", cChangeSparql, changesOntologySchema);
-            sesameRepos.addLitTriple(name, namespaces.get("co") + "json", toJSON(ccName, ccPriority), changesOntologySchema);
+            sesameRepos.addLitTriple(ccUri, namespaces.get("co") + "sparql", cChangeSparql, changesOntologySchema);
+            sesameRepos.addLitTriple(ccUri, namespaces.get("co") + "json", toJSON(ccName, ccPriority), changesOntologySchema);
         }
-//        this.deleteComplexChangeInstWithLessPr(changesOntology, ccName); //update the changes ontology schema accordingly 
+//        this.deleteComplexChangeInstWithLessPr(, ccName); //update the changes ontology schema accordingly 
         return ccDefError;
     }
 
@@ -354,10 +334,12 @@ public class CCManager {
      * changes ontology given as parameter.
      *
      * @param changesOntology The complex change which will be examined.
+     * @param detectedOnly A flag which denotes whether only the detected
+     * changes of the defined complex changes will be deleted or not.
      * @return True if there was deleted any complex change detection instance,
      * false otherwise.
      */
-    public boolean deleteAllComplexChanges(String changesOntology) {
+    public boolean deleteAllComplexChanges(String changesOntology, boolean detectedOnly) {
         List<String> ccNames = new ArrayList<>();
         String query = "select ?cc_name from <" + changesOntologySchema + "> where { "
                 + "?cc rdfs:subClassOf co:Complex_Change; "
@@ -374,13 +356,14 @@ public class CCManager {
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
         }
-        return deleteComplexChanges(changesOntology, ccNames);
+        return deleteComplexChanges(changesOntology, ccNames, detectedOnly);
     }
 
     /**
-     * Deletes the detected instances of all with complex changes higher priority 
-     * value than the complex change given as parameter. This means that these 
-     * complex changes are less important.
+     * Deletes the detected instances of all with complex changes higher
+     * priority value than the complex change given as parameter. This means
+     * that these complex changes are less important.
+     *
      * @param changesOntology The complex change which will be examined.
      * @param ccName The complex change whose priority is considered.
      * @return
@@ -435,10 +418,13 @@ public class CCManager {
      * @param changesOntology The changes ontology which contains possible
      * detected instances of the given complex change
      * @param ccName The name of the complex change.
+     * @param detectedOnly A flag which denotes whether the detected changes of
+     * change with name ccName will be deleted (true) or the definition of
+     * change as well.
      * @return True if there were found and deleted detected instances of the
      * given complex change, false otherwise.
      */
-    public boolean deleteComplexChange(String changesOntology, String ccName) {
+    public boolean deleteComplexChange(String changesOntology, String ccName, boolean detectedOnly) {
         HashMap<String, String> namespaces = new HashMap<>();
         namespaces.put("co", "http://www.diachron-fp7.eu/changes/");
         namespaces.put("rdfs", "http://www.w3.org/2000/01/rdf-schema#");
@@ -467,9 +453,9 @@ public class CCManager {
             if (!success) {
                 return false;
             }
-            deleteCCUriTriples(changesOntology, ccName, ccUri);
+            deleteCCUriTriples(changesOntology, ccName, ccUri, detectedOnly);
             if (!ccParams.isEmpty()) {
-                deleteCCParamTriples(changesOntology, ccParams);
+                deleteCCParamTriples(changesOntology, ccParams, detectedOnly);
             }
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage() + " occured .");
@@ -479,41 +465,48 @@ public class CCManager {
         return success;
     }
 
-   /**
-    * Deletes all the detected instances of the complex changes with names given as parameter 
-    * from the changes ontology with name also given as parameter.
-    * 
-    * @param changesOntology The changes ontology which contains possible
-    * detected instances of the given complex change
-    * @param ccNames The list of names of the complex changes.
-    * @return True if there were found and deleted detected instances of at least 
-    * one of the given complex changes, false otherwise.
-    */
-   public boolean deleteComplexChanges(String changesOntology, List<String> ccNames) {
-       boolean result = false;
-       for (String change : ccNames) {
-           boolean tmp = deleteComplexChange(changesOntology, change);
-           if (tmp) {
-               result = tmp;
-           }
-       }
-       return result;
-   }
-    
-   /**
-    * Stores a complex change into the ontology of changes. 
-    * @param name The name of the complex change.
-    * @param priority The priority of the complex change. 
-    * @param scDefinitions A list of associated complex changes 
-    * @param ccParameters A map of complex change parameters which contains the 
-    * complex change parameter names (as keys) and the optional associated simple change 
-    * parameter names (as values) 
-    * @param versionFilters The list of version filters. 
-    * @return An instance of {@link CCDefinitionError} whose {@link ErrorCode}
+    /**
+     * Deletes all the detected instances of the complex changes with names
+     * given as parameter from the changes ontology with name also given as
+     * parameter.
+     *
+     * @param changesOntology The changes ontology which contains possible
+     * detected instances of the given complex change
+     * @param ccNames The list of names of the complex changes.
+     * @param detectedOnly A flag which denotes whether the detected changes of
+     * change with name ccName will be deleted (true) or the definition of
+     * change as well.
+     * @return True if there were found and deleted detected instances of at
+     * least one of the given complex changes, false otherwise.
+     */
+    public boolean deleteComplexChanges(String changesOntology, List<String> ccNames, boolean detectedOnly) {
+        boolean result = false;
+        for (String change : ccNames) {
+            boolean tmp = deleteComplexChange(changesOntology, change, detectedOnly);
+            if (tmp) {
+                result = tmp;
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Stores a complex change into the ontology of changes.
+     *
+     * @param name The name of the complex change.
+     * @param priority The priority of the complex change.
+     * @param description
+     * @param scDefinitions A list of associated complex changes
+     * @param ccParameters A map of complex change parameters which contains the
+     * complex change parameter names (as keys) and the optional associated
+     * simple change parameter names (as values)
+     * @param versionFilters The list of version filters.
+     * @param associations
+     * @return An instance of {@link CCDefinitionError} whose {@link ErrorCode}
      * is NULL if the complex change is inserted successfully. Otherwise, the
      * {@link ErrorCode} denotes the type of the error.
-    */
-   public CCDefinitionError saveCCExtendedDefinition(String name, Double priority, List<SCDefinition> scDefinitions, Map<String, String> ccParameters, List<VersionFilter> versionFilters) {
+     */
+    public CCDefinitionError saveCCExtendedDefinition(String name, Double priority, String description, List<SCDefinition> scDefinitions, Map<String, String> ccParameters, List<VersionFilter> versionFilters) {
         setCcName(name);
         if (this.ccDefError.getErrorCode() != null) {
             return this.ccDefError;
@@ -522,6 +515,7 @@ public class CCManager {
         if (this.ccDefError.getErrorCode() != null) {
             return this.ccDefError;
         }
+        this.ccDescription = description;
 //        boolean mandatoryExists = false;
 //        for (SCDefinition scDef : scDefinitions) {
 //            if (scDef.isIsOptional() == false) {
@@ -548,11 +542,15 @@ public class CCManager {
         return insertChangeDefinition();
     }
 
-   /**
-    * Groups the given list of version filtes w.r.t. their presence.  
-    * @param vfilters The list of version filters. 
-    */
+    /**
+     * Groups the given list of version filtes w.r.t. their presence.
+     *
+     * @param vfilters The list of version filters.
+     */
     public void groupFiltersPerPresence(List<VersionFilter> vfilters) {
+        if (vfilters == null) {
+            return;
+        }
         for (VersionFilter filter : vfilters) {
             if (versionFilters.get(filter.getPresence()) == null) {
                 versionFilters.put(filter.getPresence(), new ArrayList<VersionFilter>());
@@ -565,9 +563,13 @@ public class CCManager {
     public JDBCVirtuosoRep getJdbcRep() {
         return jdbcRep;
     }
-    
+
+    public SesameVirtRep getSesameRep() {
+        return sesameRepos;
+    }
+
     /**
-     * Terminates the JDBC Virtuoso and Sesame connections. 
+     * Terminates the JDBC Virtuoso and Sesame connections.
      */
     public void terminate() {
         if (jdbcRep != null) {
@@ -577,7 +579,7 @@ public class CCManager {
             sesameRepos.terminate();
         }
     }
-    
+
     private void deleteDetectedCCUriTriples(String changesOntology, String ccUri) {
         String sparul = "DELETE WHERE {\n" //delete detected cc uris
                 + "GRAPH <" + changesOntology + "> {\n"
@@ -587,15 +589,17 @@ public class CCManager {
                 + "}\n";
         jdbcRep.executeUpdateQuery("sparql " + sparul, false);
     }
-    
-    private void deleteCCUriTriples(String changesOntology, String ccName, String ccUri) {
+
+    private void deleteCCUriTriples(String changesOntology, String ccName, String ccUri, boolean detectedOnly) {
         String sparul = "DELETE WHERE {\n"
                 + "GRAPH <" + changesOntologySchema + "> {\n"
                 + "  ?ccURI co:name '" + ccName + "';\n"
                 + "     ?ccParam ?ccParamName.\n"
                 + "}\n"
                 + "}\n";
-        jdbcRep.executeUpdateQuery("sparql " + sparul, false);
+        if (!detectedOnly) {
+            jdbcRep.executeUpdateQuery("sparql " + sparul, false);
+        }
         sparul = "DELETE WHERE {\n" //delete detected cc uris
                 + "GRAPH <" + changesOntology + "> {\n"
                 + "?dcc a <" + ccUri + "> ;"
@@ -605,7 +609,7 @@ public class CCManager {
         jdbcRep.executeUpdateQuery("sparql " + sparul, false);
     }
 
-    private void deleteCCParamTriples(String changesOntology, ArrayList<String> ccParams) {
+    private void deleteCCParamTriples(String changesOntology, ArrayList<String> ccParams, boolean detectedOnly) {
         String sparul;
         for (String ccParam : ccParams) {
             sparul = "DELETE WHERE {\n"
@@ -613,13 +617,15 @@ public class CCManager {
                     + "<" + ccParam + "> ?p ?o.\n"
                     + "}\n"
                     + "}\n";
-            jdbcRep.executeUpdateQuery("sparql " + sparul, false);
-            sparul = "DELETE WHERE {\n"
-                    + "GRAPH <" + changesOntologySchema + "> {\n"
-                    + "?s <" + ccParam + "> ?o.\n"
-                    + "}\n"
-                    + "}\n";
-            jdbcRep.executeUpdateQuery("sparql " + sparul, false);
+            if (!detectedOnly) {
+                jdbcRep.executeUpdateQuery("sparql " + sparul, false);
+                sparul = "DELETE WHERE {\n"
+                        + "GRAPH <" + changesOntologySchema + "> {\n"
+                        + "?s <" + ccParam + "> ?o.\n"
+                        + "}\n"
+                        + "}\n";
+                jdbcRep.executeUpdateQuery("sparql " + sparul, false);
+            }
             sparul = "DELETE WHERE {\n"
                     + "GRAPH <" + changesOntology + "> {\n"
                     + "?s ?p <" + ccParam + ">.\n"
@@ -658,16 +664,87 @@ public class CCManager {
             ccParamsMap.put(versionFiltersCCParameters.get(param).getParamNameString(), "cc_v" + i);
             i++;
         }
+        // add the complex change parameters from the associations, if any
+
         ///
-//        sparqlQuery.append("   co:old_version ?v1;\n");
-//        sparqlQuery.append("   co:new_version ?v2.\n");
         for (SCDefinition sChange : sChanges) {
             sparqlQuery.append("?cc co:consumes ?" + createVarFromURI(sChange.getsChangeUri()) + ".\n");
         }
+
         i = 1;
         sparqlQuery.append("}\n");
         sparqlQuery.append("WHERE {\n");
         sparqlQuery.append("GRAPH <changesOntology> {\n");
+        if (insertSCBlocks(sparqlQuery, i, ccParamsMap)) {
+            return null;
+        }
+        /// Version Filters
+        insertVersFiltBlocks(ccParamsMap, sparqlQuery);
+        //url construction
+        i = 1;
+        String url = "BIND(CONCAT(";
+        for (String param : cChangeParameters.keySet()) {
+            url += "STR(?cc_v" + i + ") ";
+            i++;
+            if (i <= cChangeParameters.size()) {
+                url += ", ";
+            }
+        }
+        url += ", 'changesOntology') AS ?url) .";
+        sparqlQuery.append(url + "\n");
+        sparqlQuery.append("BIND(IRI(CONCAT('" + cChangeURI + "/dcc/',SHA1(?url))) AS ?cc).\n");
+        sparqlQuery.append("}\n}\n");
+        System.out.println(sparqlQuery);
+        return sparqlQuery.toString();
+    }
+
+    private void insertVersFiltBlocks(LinkedHashMap<String, String> ccParamsMap, StringBuilder sparqlQuery) {
+        List<VersionFilter> group;
+        cChangeParameters.putAll(versionFiltersCCParameters);
+        for (Presence pr : versionFilters.keySet()) {
+            group = versionFilters.get(pr);
+            StringBuilder versionFilterBlock = new StringBuilder();
+            String graph;
+            if (pr == Presence.EXISTS_IN_V2) {
+                graph = "GRAPH <v2>";
+            } else if (pr == Presence.EXISTS_IN_V1) {
+                graph = "GRAPH <v1>";
+            } else if (pr == Presence.NOT_EXISTS_IN_V1) {
+                graph = "FILTER NOT EXISTS { GRAPH <v1>";
+            } else {
+                graph = "FILTER NOT EXISTS { GRAPH <v2>";
+            }
+
+            if (pr == Presence.EXISTS_IN_V2 || pr == Presence.EXISTS_IN_V1) {
+                versionFilterBlock.append(graph + " {\n");
+                for (VersionFilter vFilter : group) {
+                    String subject = vFilter.getSubject();
+                    String predicate = vFilter.getPredicate();
+                    String object = vFilter.getObject();
+                    subject = transformVariablePart(subject, ccParamsMap);
+                    predicate = transformVariablePart(predicate, ccParamsMap);
+                    object = transformVariablePart(object, ccParamsMap);
+                    versionFilterBlock.append(subject + " " + predicate + " " + object + ".\n");
+                }
+                versionFilterBlock.append("}\n");
+            } else {
+                for (VersionFilter vFilter : group) {
+                    versionFilterBlock.append(graph + " {");
+                    String subject = vFilter.getSubject();
+                    String predicate = vFilter.getPredicate();
+                    String object = vFilter.getObject();
+                    subject = transformVariablePart(subject, ccParamsMap);
+                    predicate = transformVariablePart(predicate, ccParamsMap);
+                    object = transformVariablePart(object, ccParamsMap);
+                    versionFilterBlock.append(subject + " " + predicate + " " + object + ".");
+                    versionFilterBlock.append("} }\n");
+                }
+            }
+            sparqlQuery.append(versionFilterBlock);
+        }
+    }
+
+    private boolean insertSCBlocks(StringBuilder sparqlQuery, int i, LinkedHashMap<String, String> ccParamsMap) {
         for (SCDefinition sChange : sChanges) {
             if (sChange.isIsOptional()) {
                 sparqlQuery.append("OPTIONAL {\n");
@@ -695,7 +772,7 @@ public class CCManager {
 //                    String filter = sChange.getSelectionFilters();
                 } catch (Exception ex) {
                     setCcDefError("Something is wrong in Selection Filters", CODE.SELECTION_FILTER_ERROR);
-                    return null;
+                    return true;
                 }
             }
             // join filters 
@@ -716,7 +793,7 @@ public class CCManager {
                     }
                 } catch (Exception ex) {
                     setCcDefError("Something is wrong in Join Filters", CODE.JOIN_FILTER_ERROR);
-                    return null;
+                    return true;
                 }
             }
             if (sChange.isIsOptional()) {
@@ -741,77 +818,15 @@ public class CCManager {
                     }
                 } catch (Exception ex) {
                     setCcDefError("Something is wrong in CC Parameter Filters", CODE.CC_PARAM_FILTER_ERROR);
-                    return null;
+                    return true;
                 }
             }
             i++;
         }
-        // version filters 
-        sparqlQuery.append("######\n");
-        List<VersionFilter> group;
-        cChangeParameters.putAll(versionFiltersCCParameters);
-        for (Presence pr : versionFilters.keySet()) {
-            group = versionFilters.get(pr);
-            StringBuilder versionFilterBlock = new StringBuilder();
-            String graph;
-            if (pr == Presence.EXISTS_IN_V2) {
-                graph = "GRAPH ?v2";
-            } else if (pr == Presence.EXISTS_IN_V1) {
-                graph = "GRAPH ?v1";
-            } else if (pr == Presence.NOT_EXISTS_IN_V1) {
-                graph = "FILTER NOT EXISTS { GRAPH ?v1";
-            } else {
-                graph = "FILTER NOT EXISTS { GRAPH ?v2";
-            }
-
-            if (pr == Presence.EXISTS_IN_V2 || pr == Presence.EXISTS_IN_V1) {
-                versionFilterBlock.append(graph + " {\n");
-                for (VersionFilter vFilter : group) {
-                    String subject = vFilter.getSubject();
-                    String predicate = vFilter.getPredicate();
-                    String object = vFilter.getObject();
-                    subject = transformTriplePart(subject, ccParamsMap);
-                    predicate = transformTriplePart(predicate, ccParamsMap);
-                    object = transformTriplePart(object, ccParamsMap);
-                    versionFilterBlock.append(subject + " " + predicate + " " + object + ".\n");
-                }
-                versionFilterBlock.append("}\n");
-            } else {
-                for (VersionFilter vFilter : group) {
-                    versionFilterBlock.append(graph + " {");
-                    String subject = vFilter.getSubject();
-                    String predicate = vFilter.getPredicate();
-                    String object = vFilter.getObject();
-                    subject = transformTriplePart(subject, ccParamsMap);
-                    predicate = transformTriplePart(predicate, ccParamsMap);
-                    object = transformTriplePart(object, ccParamsMap);
-                    versionFilterBlock.append(subject + " " + predicate + " " + object + ".");
-                    versionFilterBlock.append("} }\n");
-                }
-            }
-            sparqlQuery.append(versionFilterBlock);
-        }
-        ////
-        //url construction
-        i = 1;
-        sparqlQuery.append("######\n");
-        String url = "BIND(CONCAT(";
-        for (String param : cChangeParameters.keySet()) {
-            url += "STR(?cc_v" + i + ") ";
-            i++;
-            if (i <= cChangeParameters.size()) {
-                url += ", ";
-            }
-        }
-        url += ", 'changesOntology') AS ?url) .";
-        sparqlQuery.append(url + "\n");
-        sparqlQuery.append("BIND(IRI(CONCAT('" + cChangeURI + "/dcc/',SHA1(?url))) AS ?cc).\n");
-        sparqlQuery.append("}\n}\n");
-        System.out.println(sparqlQuery);
-        return sparqlQuery.toString();
+        return false;
     }
 
-    private String transformTriplePart(String part, HashMap<String, String> ccParamsMap) {
+    private String transformVariablePart(String part, HashMap<String, String> ccParamsMap) {
         if (part.contains(":-")) {  //the triple part is a simple change parameter
             String[] arr = part.split(":-");
             OntologicalSimpleChangesType type1 = getChangeTypeFromURI(createVarFromURI(arr[0]));
@@ -867,6 +882,7 @@ public class CCManager {
         JSONObject ccJSON = new JSONObject();
         ccJSON.put("Complex_Change", cChangeName);
         ccJSON.put("Priority", cChangePriority);
+        ccJSON.put("Description", this.ccDescription);
         JSONArray ccJsonParams = new JSONArray();
         for (String ccParamName : cChangeParameters.keySet()) {
             CCParameter parameter = cChangeParameters.get(ccParamName);
@@ -882,16 +898,56 @@ public class CCManager {
             scJson.add(sc.toJSON());
         }
         ccJSON.put("Simple_Changes", scJson);
-        JSONArray versFiltJson = new JSONArray();
+        JSONArray jsonArray = new JSONArray();
         for (Presence pr : versionFilters.keySet()) {
             List<VersionFilter> filters = versionFilters.get(pr);
             for (VersionFilter filter : filters) {
-                versFiltJson.add(filter.toJson());
+                jsonArray.add(filter.toJson());
             }
         }
-        ccJSON.put("Version_Filters", versFiltJson);
+        ccJSON.put("Version_Filters", jsonArray);
         System.out.println(ccJSON.toJSONString());
         return ccJSON.toJSONString();
+    }
+
+    /**
+     * Converts a SPARQL update query into a SPARQL select query. Moreover, the
+     * query is stored as a {@link Properties} file with all the required meta
+     * data.
+     *
+     * @param sparul
+     * @param scUris
+     * @return
+     */
+    public static Properties convertSPARQL(String sparul, List<String> scUris) {
+        Properties ccProp = new Properties();
+        int start = sparul.indexOf("{");
+        int end = sparul.indexOf("}");
+        String insertBlock = sparul.substring(start + 1, end);
+        String[] insertStmts = insertBlock.split("\\?cc");
+        String type = insertStmts[1].trim();
+        ccProp.put("type", type.substring(0, type.length() - 1));
+        int cnt = 1;
+        String stmt;
+        for (int i = 2; i < insertStmts.length; i++) {
+            stmt = insertStmts[i].trim();
+            if (stmt.charAt(0) == '<') {
+                ccProp.put("var" + cnt, stmt);
+                ccProp.put("type_var" + cnt, "URI,LITERAL");
+                cnt++;
+            }
+        }
+        StringBuilder sparqlSelect = new StringBuilder();
+        sparqlSelect.append("select ");
+        for (int i = 1; i < cnt; i++) {
+            sparqlSelect.append("?cc_v").append(i).append(" ");
+        }
+        for (String scUri : scUris) {
+            sparqlSelect.append(scUri).append(" ");
+        }
+        sparqlSelect.append(sparul.substring(end + 1));
+        ccProp.put("query", sparqlSelect.toString());
+        return ccProp;
     }
 
 }

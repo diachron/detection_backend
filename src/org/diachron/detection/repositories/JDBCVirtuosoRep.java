@@ -9,7 +9,10 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  * This class contains a set of methods which are used to handle Virtuoso Triple
@@ -39,7 +42,7 @@ public class JDBCVirtuosoRep {
         sa[1] = port + "";
         sa[2] = usr;
         sa[3] = pwd;
-        Class.forName("virtuoso.jdbc3.Driver");
+        Class.forName("virtuoso.jdbc4.Driver");
         conn = DriverManager.getConnection("jdbc:virtuoso://" + sa[0] + ":" + sa[1] + "/charset=UTF-8/log_enable=2", sa[2], sa[3]);
         statement = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
     }
@@ -48,28 +51,11 @@ public class JDBCVirtuosoRep {
      * Creates a new Virtuoso connection. The credentials are taken from a
      * properties file.
      *
-     * @param propFile The path to the properties file
+     * @param prop The properties file
      * @throws ClassNotFoundException
      * @throws SQLException
      * @throws IOException
      */
-    public JDBCVirtuosoRep(String propFile) throws ClassNotFoundException, SQLException, IOException {
-        Properties prop = new Properties();
-        InputStream inputStream;
-        inputStream = new FileInputStream(propFile);
-        prop.load(inputStream);
-        this.conn = null;
-        String[] sa = new String[4];
-        sa[0] = prop.getProperty("Repository_IP");
-        sa[1] = Integer.parseInt(prop.getProperty("Repository_Port")) + "";
-        sa[2] = prop.getProperty("Repository_Username");
-        sa[3] = prop.getProperty("Repository_Password");
-        Class.forName("virtuoso.jdbc3.Driver");
-        conn = DriverManager.getConnection("jdbc:virtuoso://" + sa[0] + ":" + sa[1] + "/charset=UTF-8/log_enable=2", sa[2], sa[3]);
-        statement = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
-        inputStream.close();
-    }
-
     public JDBCVirtuosoRep(Properties prop) throws ClassNotFoundException, SQLException, IOException {
         this.conn = null;
         String[] sa = new String[4];
@@ -77,7 +63,7 @@ public class JDBCVirtuosoRep {
         sa[1] = Integer.parseInt(prop.getProperty("Repository_Port")) + "";
         sa[2] = prop.getProperty("Repository_Username");
         sa[3] = prop.getProperty("Repository_Password");
-        Class.forName("virtuoso.jdbc3.Driver");
+        Class.forName("virtuoso.jdbc4.Driver");
         conn = DriverManager.getConnection("jdbc:virtuoso://" + sa[0] + ":" + sa[1] + "/charset=UTF-8/log_enable=2", sa[2], sa[3]);
         statement = conn.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
     }
@@ -123,13 +109,17 @@ public class JDBCVirtuosoRep {
                 start = System.currentTimeMillis();
             }
             statement.setFetchSize(1000000);
-            result = statement.executeQuery("sparql " + query);
+            StringBuilder sparql = new StringBuilder();
+            sparql.append("PREFIX diachron:<http://www.diachron-fp7.eu/resource/>\n").
+                    append("PREFIX efo:<http://www.ebi.ac.uk/efo/>\n").
+                    append("PREFIX co:<http://www.diachron-fp7.eu/changes/>\n");
+            result = statement.executeQuery("sparql " + sparql + query);
             if (logging) {
                 System.out.println("Done in " + (System.currentTimeMillis() - start) + "ms");
             }
             return result;
         } catch (SQLException ex) {
-            System.out.println("Exception occured during the select query.");
+            System.out.println("Exception occured during the select query: " + ex.getMessage());
             return null;
         }
     }
@@ -176,6 +166,25 @@ public class JDBCVirtuosoRep {
             System.out.println("Exception " + ex.getMessage() + "occured during the count of triples.");
             return 0;
         }
+    }
+
+    /**
+     * Checks if the given graph contains any triples
+     *
+     * @param graph The named graph which will be examined.
+     * @return True if the graph exists, false otherwise.
+     */
+    public boolean graphExists(String graph) {
+        String query = "SELECT * from <" + graph + "> where {?s ?p ?o} limit 2";
+        ResultSet result = executeSparqlQuery(query, false);
+        try {
+            if (result.next()) {
+                return true;
+            }
+        } catch (SQLException ex) {
+            System.out.println("Exception: " + ex.getMessage());
+        }
+        return false;
     }
 
     /**
@@ -230,6 +239,35 @@ public class JDBCVirtuosoRep {
         }
     }
 
+    public void clearRdfFilesToLoadList() throws Exception {
+        String query = "delete from DB.DBA.load_list";
+        System.out.println(query);
+        executeUpdateQuery(query, false);
+    }
+
+    public void addRdfFilesToLoad(String folder, String format, String graph) throws Exception {
+        String query = "ld_dir('" + folder + "', '" + format + "', '" + graph + "')";
+        System.out.println(query);
+        executeUpdateQuery(query, false);
+    }
+
+    public void processFilesToLoadQueue(boolean timer) throws Exception {
+        executeUpdateQuery("set isolation='uncommitted'", timer);
+        executeUpdateQuery("rdf_loader_run()", timer);
+    }
+
+    public void importRDFDataToVirtuoso(String repFolder, String format, String graph, boolean update, boolean logging) throws Exception {
+        // importing the data into virtuoso
+        if (!update) {
+            clearGraph(graph, false);
+        }
+        clearRdfFilesToLoadList();
+        addRdfFilesToLoad(repFolder, format, graph);
+//        ops.executeSparqlQuery("select * from DB.DBA.load_list");
+        processFilesToLoadQueue(logging);
+        executeUpdateQuery("checkpoint", true);
+    }
+
     /**
      * Copies the contents of a named graph into another.
      *
@@ -244,7 +282,7 @@ public class JDBCVirtuosoRep {
                 + "WHERE {"
                 + "graph <" + source + "> { ?s ?p ?o }"
                 + "}";
-        executeUpdateQuery(query, true);
+        executeUpdateQuery(query, false);
     }
 
     /**
@@ -258,6 +296,67 @@ public class JDBCVirtuosoRep {
                 + "SET g = iri_to_id ('" + newName + "') "
                 + "WHERE g = iri_to_id ('" + oldName + "', 0)";
         executeUpdateQuery(query, true);
+    }
+
+    /**
+     * Inserts a (URI) triple into a named graph.
+     *
+     * @param s The subject URI of the triple.
+     * @param p The predicate URI of the triple.
+     * @param o The object URI triple.
+     * @param graph The named graph into which the triple will be inserted.
+     */
+    public void addTriple(String s, String p, String o, String graph) {
+        String update = "INSERT INTO <" + graph + "> {\n"
+                + "<" + s + "> <" + p + "> <" + o + ">.\n"
+                + "}\n";
+        executeUpdateQuery("sparql " + update, false);
+    }
+
+    /**
+     * Inserts a (Literal) triple into a named graph.
+     *
+     * @param s The subject URI of the triple.
+     * @param p The predicate URI of the triple.
+     * @param o The string literal object of the triple.
+     * @param graph The named graph into which the triple will be inserted.
+     */
+    public void addLitTriple(String s, String p, String o, String graph) {
+        String update = "INSERT INTO <" + graph + "> {\n"
+                + "<" + s + "> <" + p + "> \"" + o + "\".\n"
+                + "}\n";
+        executeUpdateQuery("sparql " + update, false);
+    }
+
+    /**
+     * Inserts a list of triples within the given namedgraph.
+     *
+     * @param triples A list of {@link TripleString} instances which represents
+     * the triples to be inserted.
+     * @param graph The named graph into which the triple will be inserted.
+     */
+    public void addMultipleTriples(List<TripleString> triples, String graph) {
+        StringBuilder update = new StringBuilder();
+        update.append("INSERT INTO <" + graph + "> {\n");
+        for (TripleString triple : triples) {
+            update.append(triple.getTripleString() + ".\n");
+        }
+        update.append("}\n");
+        executeUpdateQuery("sparql " + update.toString(), false);
+    }
+
+    public void dereifyDiachronVersion(String reifiedSrc, String dereifiedDst) {
+        String query = "sparql insert into <" + dereifiedDst + "> {\n "
+                + "?s ?p ?o. \n"
+                + "} where { \n "
+                + "graph <" + reifiedSrc + "> {\n"
+                + "?record diachron:subject ?s ;\n"
+                + "        diachron:hasRecordAttribute ?ratt.\n"
+                + "?ratt diachron:predicate ?p ; \n"
+                + "      diachron:object ?o.\n"
+                + "}\n"
+                + "}";
+        executeUpdateQuery(query, false);
     }
 
 }
