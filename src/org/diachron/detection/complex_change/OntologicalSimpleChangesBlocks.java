@@ -4,7 +4,7 @@
  */
 package org.diachron.detection.complex_change;
 
-import org.diachron.detection.utils.OntologicalSimpleChangesType;
+import org.diachron.detection.change_detection_utils.OntologicalSimpleChangesType;
 import java.util.HashMap;
 
 /**
@@ -103,8 +103,8 @@ public class OntologicalSimpleChangesBlocks {
 
     private static String getDelete_Type_From_Individual() {
         return "[uri] a co:Delete_Type_From_Individual;\n"
-                + "  co:dtti_p1 [uri]1;\n"
-                + "  co:dtti_p2 [uri]2.";
+                + "  co:dtfi_p1 [uri]1;\n"
+                + "  co:dtfi_p2 [uri]2.";
     }
 
     private static String getDelete_Domain() {
@@ -117,12 +117,6 @@ public class OntologicalSimpleChangesBlocks {
         return "[uri] a co:Add_Range; \n"
                 + "  co:dr_p1 [uri]1;\n"
                 + "  co:dr_p2 [uri]2.";
-    }
-
-    private static String getAssociation() {
-        return "[uri] a co:Association; \n"
-                + "  co:assoc_p1 [uri]1;\n"
-                + "  co:assoc_p2 [uri]2.";
     }
 
     public static HashMap<String, String> fetchSCParamsURIs(OntologicalSimpleChangesType change, String uri) {
@@ -171,10 +165,6 @@ public class OntologicalSimpleChangesBlocks {
             case DELETE_TYPE_FROM_INDIVIDUAL:
                 scParamsMap.put("individual", uri + "1");
                 scParamsMap.put("type", uri + "2");
-                break;
-            case ASSOCIATION:
-                scParamsMap.put("old_value", uri + "1");
-                scParamsMap.put("new_value", uri + "2");
                 break;
             default:
                 return null;
@@ -240,9 +230,7 @@ public class OntologicalSimpleChangesBlocks {
             case DELETE_RANGE:
                 res = getDelete_Range();
                 break;
-            case ASSOCIATION:
-                res = getAssociation();
-                break;
+
             default:
                 return "Change: " + change + " is not currently supported";
         }
