@@ -1,0 +1,6 @@
+Tests
+org.diachron.detection.associations
+org.diachron.detection.complex_change
+org.diachron.detection.exploit
+org.diachron.detection.repositories
+org.diachron.detection.utils
