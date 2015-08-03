@@ -1,9 +1,7 @@
 INSERT INTO <changesOntology> {
 ?ac a co:Add_Comment;
     co:ac_p1 ?a;
-    co:ac_p2 ?b;
-    co:old_version ?v1;
-    co:new_version ?v2.
+    co:ac_p2 ?b.
 }
 WHERE {
 GRAPH <v2> { 
@@ -18,6 +16,9 @@ FILTER NOT EXISTS { GRAPH <v1> {
       diachron:object ?b.
 }
 }
+FILTER NOT EXISTS { GRAPH <assoc> {
+?assoc co:new_value ?a.
+} }
 #
 BIND(IRI('v1') as ?v1).
 BIND(IRI('v2') as ?v2).

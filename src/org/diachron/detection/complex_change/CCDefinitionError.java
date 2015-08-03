@@ -16,7 +16,6 @@ public class CCDefinitionError {
      */
     public static enum CODE {
 
-        EMPTY_FIELD,
         NON_UNIQUE_CC_NAME,
         NON_UNIQUE_CC_PARAM_NAME,
         NO_CC_PARAM,
