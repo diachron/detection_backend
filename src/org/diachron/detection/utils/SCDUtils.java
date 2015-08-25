@@ -80,8 +80,29 @@ public class SCDUtils {
         }
         ChangesDetector detector = new ChangesDetector(propFile, ontology, tmpUri + "/changes/schema", associations);
         detector.detectSimpleChanges(oldV, newV, simpleChanges);
-        detector.detectAssociations(oldV, newV);
-        detector.detectComplexChanges(oldV, newV, complexChanges);
+        if (associations != null) {
+            detector.detectAssociations(oldV, newV);
+        }
+        if (complexChanges == null || complexChanges.length > 0) {
+            detector.detectComplexChanges(oldV, newV, complexChanges);
+        }
+        detector.terminate();
+    }
+    
+    public void customCompareVersions(String oldV, String newV, String ontology, String[] simpleChanges, String[] complexChanges) throws Exception {
+        
+        String tmpUri = datasetURI;
+        if (datasetURI.endsWith("/")) {
+            tmpUri = datasetURI.substring(0, datasetURI.length() - 1);
+        }
+        ChangesDetector detector = new ChangesDetector(propFile, ontology, tmpUri + "/changes/schema", associations);
+        detector.detectSimpleChanges(oldV, newV, simpleChanges);
+        if (associations != null) {
+            detector.detectAssociations(oldV, newV);
+        }
+        if (complexChanges == null || complexChanges.length > 0) {
+            detector.detectComplexChanges(oldV, newV, complexChanges);
+        }
         detector.terminate();
     }
 

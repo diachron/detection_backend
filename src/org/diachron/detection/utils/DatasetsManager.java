@@ -549,8 +549,12 @@ public class DatasetsManager {
      * Terminates the current JDBC connection.
      */
     public void terminate() {
-        jdbc.terminate();
-        sesame.terminate();
+        if (jdbc != null) {
+            jdbc.terminate();
+        }
+        if (sesame != null) {
+            sesame.terminate();
+        }
     }
 
     /**

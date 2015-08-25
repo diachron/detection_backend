@@ -241,9 +241,12 @@ public class JDBCVirtuosoRep {
      * Terminates the JDBC connection.
      */
     public void terminate() {
+
         try {
-            statement.close();
-            conn.close();
+            if (!statement.isClosed()) {
+                statement.close();
+                conn.close();
+            }
         } catch (Exception ex) {
             System.out.println("Exception: " + ex.getMessage() + " occured during the close of statement and connection.");
         }

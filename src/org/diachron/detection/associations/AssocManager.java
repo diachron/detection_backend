@@ -16,6 +16,7 @@ import org.diachron.detection.repositories.JDBCVirtuosoRep;
 public class AssocManager {
 
     private String datasetUri;
+    private boolean removeExist;
     private final JDBCVirtuosoRep jdbc;
     private final HashMap<String, String> namespaces;
 
@@ -26,10 +27,7 @@ public class AssocManager {
         namespaces.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
         this.datasetUri = datasetURI;
         jdbc = new JDBCVirtuosoRep(propFile);
-        if (removeExisting) {
-            jdbc.clearGraph(datasetURI, false);
-            init(datasetURI);
-        }
+        removeExist = removeExisting;
     }
 
     public AssocManager(JDBCVirtuosoRep jdbc, String datasetURI, boolean removeExisting) throws Exception {
@@ -39,10 +37,7 @@ public class AssocManager {
         namespaces.put("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
         this.datasetUri = datasetURI;
         this.jdbc = jdbc;
-        if (removeExisting) {
-            jdbc.clearGraph(datasetURI, false);
-            init(datasetURI);
-        }
+        this.removeExist = removeExisting;
     }
 
     private void init(String assocGraph) {
@@ -87,6 +82,10 @@ public class AssocManager {
                     + "      diachron:object ?b.\n";
         }
         String assocGraph = getAssocGraph(oldVersion, newVersion);
+        if (removeExist) {
+            jdbc.clearGraph(assocGraph, false);
+            init(assocGraph);
+        }
         String sparql = "insert into <" + assocGraph + "> { \n"
                 + "?assoc rdf:type co:Association; \n"
                 + "       co:old_value ?old_value; \n"

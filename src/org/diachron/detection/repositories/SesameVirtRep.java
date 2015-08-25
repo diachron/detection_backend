@@ -246,7 +246,9 @@ public class SesameVirtRep {
             return;
         }
         SesameVirtRep sesame = new SesameVirtRep(prop);
-        sesame.exportToFile("version_2.38.rdfs", RDFFormat.RDFXML, "http://www.diachron-fp7.eu/resource/recordset/efo/2.38");
+//        sesame.exportToFile("ontology.nt", RDFFormat.NTRIPLES, "http://www.ebi.ac.uk/efo/changes/2.34-2.38/temp");
+        sesame.clearGraphContents("http://www.ebi.ac.uk/efo/changes/2.34-2.38/temp");
+        sesame.importFile("ontology.nt", RDFFormat.NTRIPLES, "http://www.ebi.ac.uk/efo/changes/2.34-2.38/temp");
 //        sesame.exportToFile("version_2.46.rdfs", RDFFormat.RDFXML, "http://www.diachron-fp7.eu/resource/recordset/efo/2.46");
 //        sesame.exportToFile("version_2.44.rdf", RDFFormat.RDFXML, "http://original/efo/2.44");
 //        sesame.exportToFile("version_2.47.rdf", RDFFormat.RDFXML, "http://original/efo/2.47");
