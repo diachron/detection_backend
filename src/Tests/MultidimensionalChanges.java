@@ -31,7 +31,7 @@ public class MultidimensionalChanges {
         Properties prop = new Properties();
         InputStream inputStream;
         try {
-            inputStream = new FileInputStream("md_config.properties");
+            inputStream = new FileInputStream("intrasoft-config.properties");
             prop.load(inputStream);
         } catch (IOException ex) {
             System.out.println("Exception: " + ex.getMessage() + " occured .");
@@ -42,38 +42,35 @@ public class MultidimensionalChanges {
         String dataset254n = "http://datamarket-254n";
         String dataset1bu4 = "http://datamarket-1bu4";
         String dataset4ag6 = "http://datamarket-4ag6";
-//        AssignVersionsToDatasets(prop, dataset162h, dataset254n, dataset1bu4, dataset4ag6);
-//        MCDUtils utils = new MCDUtils(prop, dataset162h, null);
-//        utils.getJDBCRepository().copyGraph("http://www.diachron-fp7.eu/changes/multidimensional/schema", dataset162h + "/changes/schema");
-//        utils.detectDatasets(false);
-//        utils.terminate();
-        /////
-//        MCDUtils utils = new MCDUtils(prop, dataset254n, null);
-//        utils.getJDBCRepository().copyGraph("http://www.diachron-fp7.eu/changes/multidimensional/schema", dataset254n + "/changes/schema");
-//        utils.detectDatasets(false);
-//        utils.terminate();
-        /////
-        SCDUtils utils = new SCDUtils(prop, dataset1bu4, null);
-//        utils.customCompareVersions("http://www.diachron-fp7.eu/datamarket-1bu4/1", "http://www.diachron-fp7.eu/datamarket-1bu4/2", null, null);
-        utils.customCompareVersions("http://www.diachron-fp7.eu/datamarket-1bu4/2", "http://www.diachron-fp7.eu/datamarket-1bu4/3", null, null);
-//        MCDUtils utils = new MCDUtils(prop, dataset1bu4, null);
-//        utils.getJDBCRepository().copyGraph("http://www.diachron-fp7.eu/changes/multidimensional/schema", dataset1bu4 + "/changes/schema");
-//        utils.detectDatasets(false);
-//        utils.terminate();
-        /////
-//        MCDUtils utils = new MCDUtils(prop, dataset4ag6, null);
-//        utils.getJDBCRepository().copyGraph("http://www.diachron-fp7.eu/changes/multidimensional/schema", dataset4ag6 + "/changes/schema");
-//        utils.detectDatasets(false);
-//        utils.terminate();
-
-//        SesameVirtRep sesame = new SesameVirtRep(prop);
-//        JDBCVirtuosoRep jdbc = new JDBCVirtuosoRep(prop);
-//        ChangesExploiter expl = new ChangesExploiter(jdbc, dataset4ag6, true);
+        //
+//        AssignVersionsToDatasetss(prop, dataset162h, dataset254n, dataset1bu4, dataset4ag6);
+//        MCDUtils utils = new MCDUtils(prop, dataset162h, false);
+//        MCDUtils utils = new MCDUtils(prop, dataset254n, false);
+//        MCDUtils utils = new MCDUtils(prop, dataset1bu4, false);
+//        MCDUtils utils = new MCDUtils(prop, dataset4ag6, false);
+//        JDBCVirtuosoRep jdbc = utils.getJDBCRepository();
+//        ChangesExploiter expl = new ChangesExploiter(jdbc, dataset1bu4, true);
 //        for (String ontology : expl.getChangesOntologies()) {
-//            System.out.println(ontology);
-////            sesame.exportToFile("datamarket-4ag6"+ontology.substring(ontology.lastIndexOf("/") + 1) + ".nt", RDFFormat.NTRIPLES, ontology);
+//            jdbc.clearGraph(ontology, true);
 //        }
-//        sesame.terminate();
+//        utils.detectDatasets(false);
+//        utils.terminate();
+        /////
+
+        SesameVirtRep sesame = new SesameVirtRep(prop);
+//        sesame.exportToFile("ChangesOntologySchema.nt", RDFFormat.NTRIPLES, dataset162h + "/changes/schema");
+
+        sesame.exportToFile("datamarket-162h_1.rdf", RDFFormat.RDFXML, "http://www.diachron-fp7.eu/datamarket-162h/1");
+        sesame.exportToFile("datamarket-162h_1.nt", RDFFormat.NTRIPLES, "http://www.diachron-fp7.eu/datamarket-162h/1");
+        sesame.exportToFile("datamarket-162h_1.n3", RDFFormat.N3, "http://www.diachron-fp7.eu/datamarket-162h/1");
+//        JDBCVirtuosoRep jdbc = new JDBCVirtuosoRep(prop);
+//        jdbc.clearGraph(dataset162h + "/changes/schema", true);
+//        jdbc.clearGraph(dataset1bu4 + "/changes/schema", true);
+//        jdbc.clearGraph(dataset254n + "/changes/schema", true);
+//        jdbc.copyGraph(dataset4ag6 + "/changes/schema", dataset254n + "/changes/schema");
+//        jdbc.copyGraph(dataset4ag6 + "/changes/schema", dataset1bu4 + "/changes/schema");
+//        jdbc.copyGraph(dataset4ag6 + "/changes/schema", dataset162h + "/changes/schema");
+        sesame.terminate();
 //        jdbc.terminate();
     }
 

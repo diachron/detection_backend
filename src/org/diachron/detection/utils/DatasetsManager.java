@@ -196,6 +196,12 @@ public class DatasetsManager {
             deleteVersionFromDataset(version);
             if (deleteVersionContents) {
                 jdbc.clearGraph(version, false);
+                String update = "sparql delete where {\n"
+                        + "graph <" + datasetsGraph + "> { \n"
+                        + "<" + version + "> ?p ?o.\n"
+                        + "}\n"
+                        + "}";
+                jdbc.executeUpdateQuery(update, false);
             }
             if (deleteAssocChangesOntologies) {
                 deleteAssocChangesOntologies(version);
@@ -207,6 +213,11 @@ public class DatasetsManager {
                 + "}\n"
                 + "}";
         jdbc.executeUpdateQuery(query, false);
+        String datasetUri = datasetURI;
+        if (datasetUri.endsWith("/")) {
+            datasetUri = datasetUri.substring(0, datasetUri.length() - 1);
+        }
+        jdbc.clearGraph(datasetUri + "/changes/schema", false);
     }
 
     private void deleteAssocChangesOntologies(String deletedVersionUri) throws SQLException {

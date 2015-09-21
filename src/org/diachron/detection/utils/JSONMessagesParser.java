@@ -184,7 +184,6 @@ public class JSONMessagesParser {
                 return ccDef;
             }
             description = (String) jsonObject.get("Description");
-
             JSONArray jsonCCParams = (JSONArray) jsonObject.get("Complex_Change_Parameters");
             if (jsonCCParams == null) {
                 ccDef.setCcDefError("Error in complex change parameters parsing.", CODE.INVALID_JSON);

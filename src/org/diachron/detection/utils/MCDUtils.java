@@ -11,6 +11,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
+import org.diachron.detection.associations.AssocManager;
 import org.diachron.detection.complex_change.CCManager;
 import org.diachron.detection.repositories.JDBCVirtuosoRep;
 import org.openrdf.repository.RepositoryException;
@@ -26,10 +27,10 @@ public class MCDUtils {
     private String datasetURI;
     private List<String> changesOntologies;
     private ChangesDetector detector;
-    private String associations;
+    private boolean detectAssoc;
     private final String datasetsGraph = "http://datasets";
 
-    public MCDUtils(Properties prop, String datasetUri, String assoc) throws IOException, ClassNotFoundException, SQLException, RepositoryException {
+    public MCDUtils(Properties prop, String datasetUri, boolean assoc) throws IOException, ClassNotFoundException, SQLException, RepositoryException {
         propFile = prop;
         this.datasetURI = datasetUri;
         String tmpUri = datasetUri;
@@ -37,21 +38,26 @@ public class MCDUtils {
             tmpUri = datasetUri.substring(0, datasetUri.length() - 1);
         }
         this.changesOntologySchema = tmpUri + "/changes/schema";
-        this.detector = new ChangesDetector(prop, null, changesOntologySchema, associations);  //the changes ontology is null initially
-        initChangesOntologies();
-        associations = assoc;
+        this.detector = new ChangesDetector(prop, null, changesOntologySchema, null);  //the changes ontology is null initially
+        setChangesOntologies();
+        detectAssoc = assoc;
     }
 
     public void detectDatasets(boolean complexOnly) throws Exception {
         DatasetsManager dManager = new DatasetsManager(getJDBCRepository(), datasetURI);
         List<String> versions = new ArrayList(dManager.fetchDatasetVersions().keySet());
-        String[] complexChanges = {};
+        AssocManager assoc = new AssocManager(dManager.getJDBCVirtuosoRep(), datasetURI, true);
         for (int i = 1; i < versions.size(); i++) {
             String v1 = versions.get(i - 1);
             String v2 = versions.get(i);
             ChangesManager cManager = new ChangesManager(getJDBCRepository(), datasetURI, v1, v2, false);
             String changesOntology = cManager.getChangesOntology();
             detector.setChangesOntology(changesOntology);
+            if (detectAssoc) {
+                detector.setAssociationsGraph(assoc.getAssocGraph(v1, v2));
+            } else {
+                detector.setAssociationsGraph(null);
+            }
             if (!complexOnly) {
                 detector.detectAssociations(v1, v2);
                 detector.detectSimpleChanges(v1, v2, null);
@@ -112,7 +118,7 @@ public class MCDUtils {
         return result;
     }
 
-    private void initChangesOntologies() throws SQLException {
+    private void setChangesOntologies() throws SQLException {
         StringBuilder datasetChanges = new StringBuilder();
         if (datasetURI.endsWith("/")) {
             datasetChanges.append(datasetURI.substring(0, datasetURI.length() - 1));

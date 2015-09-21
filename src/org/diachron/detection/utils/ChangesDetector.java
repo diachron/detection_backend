@@ -355,6 +355,10 @@ public class ChangesDetector {
         this.changesOntologySchema = changesOntologySchema;
     }
 
+    public void setAssociationsGraph(String associationsGraph) {
+        this.associationsGraph = associationsGraph;
+    }
+
     /**
      * Returns the current JDBC Virtuoso connection.
      */

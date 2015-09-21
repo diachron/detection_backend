@@ -103,8 +103,8 @@ public class OntologicalSimpleChangesBlocks {
 
     private static String getDelete_Type_From_Individual() {
         return "[uri] a co:Delete_Type_From_Individual;\n"
-                + "  co:dtti_p1 [uri]1;\n"
-                + "  co:dtti_p2 [uri]2.";
+                + "  co:dtfi_p1 [uri]1;\n"
+                + "  co:dtfi_p2 [uri]2.";
     }
 
     private static String getDelete_Domain() {

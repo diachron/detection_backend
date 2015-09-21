@@ -1,7 +1,11 @@
 package Tests;
 
+import java.io.FileInputStream;
 import java.io.FileReader;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
+import java.util.Properties;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
@@ -16,7 +20,7 @@ import org.diachron.detection.repositories.SesameVirtRep;
  * @author rousakis
  */
 public class SC_Generator {
-
+    
     private static void createChangesSchema(SesameVirtRep sesame, String defFile, String graph) throws Exception {
         HashMap<String, String> namespaces = new HashMap<>();
         namespaces.put("co", "http://www.diachron-fp7.eu/changes/");
@@ -52,19 +56,18 @@ public class SC_Generator {
             }
         }
     }
-
+    
     public static void main(String[] args) throws Exception {
-        SesameVirtRep sesame = new SesameVirtRep(
-                "139.91.183.65/",
-                //                "83.212.99.102", //modip vm
-                1111,
-                "dba",
-                "dba");
+        Properties prop = new Properties();
+        InputStream inputStream = new FileInputStream("intrasoft-config.properties");
+        prop.load(inputStream);
+        SesameVirtRep sesame = new SesameVirtRep(prop);
         String root = "input/changes_ontology/ontological/";
-        String file = root + "ontological_simple_changes.json";
+        root = "input\\changes_ontology\\multidimensional\\";
+        String file = root + "simple_changes.json";
         String graph = "http://www.diachron-fp7.eu/changes/multidimensional/schema";
-        graph = "http://www.ebi.ac.uk/efo/changes";
-//        graph = "http://rous/changes/schema";
+        graph = "http://datamarket-4ag6/changes/schema";
+        sesame.clearGraphContents(graph);
         System.out.println(sesame.triplesNum(graph));
         createChangesSchema(sesame, file, graph);
 //        sesame.clearGraphContents(graph);

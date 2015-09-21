@@ -24,16 +24,18 @@ public class ChangesExplTest {
         String v1 = "http://www.diachron-fp7.eu/resource/recordset/efo/2.34";
         String v2 = "http://www.diachron-fp7.eu/resource/recordset/efo/2.35";
         Properties prop = new Properties();
-        InputStream inputStream = new FileInputStream("config.properties");
+        InputStream inputStream = new FileInputStream("intrasoft-config.properties");
         prop.load(inputStream);
-        ChangesExploiter exploiter = new ChangesExploiter(prop, "EFO", false);
+        ChangesExploiter exploiter = new ChangesExploiter(prop, efoDataset, true);
         List<String> changes = new ArrayList<>();
-        changes.add("Add Definition");
-        changes.add("Add Synonym");
-        String resource = "http://www.ebi.ac.uk/efo/EFO_0005102";
+//        changes.add("Add Definition");
+//        changes.add("Add Synonym");
+//        String resource = "http://www.ebi.ac.uk/efo/EFO_0005102";
 //        System.out.println(exploiter.fetchChangesContainValue(resource));
-        System.out.println(exploiter.fetchChangesBetweenVersions(v1, v2, null, null, 1000));
+//        System.out.println(exploiter.fetchChangesBetweenVersions(v1, v2, null, null, 1000));
 
+        System.out.println(exploiter.fetchDetectedChangesNum(v1, v2, "Complex_Change"));
+        
 //        System.out.println(exploiter.fetchChangeDefinitions("All_Simple_Changes"));
         exploiter.terminate();
     }
