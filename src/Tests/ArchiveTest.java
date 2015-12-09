@@ -12,6 +12,7 @@ import org.diachron.detection.associations.AssocManager;
 import org.diachron.detection.exploit.ArchiveExploiter;
 import org.diachron.detection.repositories.JDBCVirtuosoRep;
 import org.diachron.detection.utils.ChangesManager;
+import org.diachron.detection.utils.ModelType;
 import org.diachron.detection.utils.SCDUtils;
 
 /**
@@ -33,14 +34,15 @@ public class ArchiveTest {
 
         ArchiveExploiter expl = new ArchiveExploiter(chDet);
 
-        //        expl.addDiachronicDataset(diachrDataset, diachrDatasetLabel);
-//        expl.addDiachronicDatasetVersion(diachrDataset, dataset1, null);
-//        expl.addDiachronicDatasetVersion(diachrDataset, dataset2, null);
-//        expl.addDiachronicDatasetVersion(diachrDataset, dataset3, null);
-//        System.out.println(expl.fetchChDetectVersion(dataset1));   //an kopsw apo to teleutaio / k metapairnw to graph me ta periexomena
-//        System.out.println(expl.fetchChDetectVersion(dataset2));   //an kopsw apo to teleutaio / k metapairnw to graph me ta periexomena
-//        createArchiveChangeSet(arch, dataset1, dataset2, diachrDataset);
-        expl.terminate();
+        expl.addDiachronicDataset(diachrDataset, diachrDatasetLabel, ModelType.ONTOLOGICAL);
+        expl.addDiachronicDatasetVersion(diachrDataset, dataset1, null);
+
+//        String chVersion = expl.fetchChDetectVersion(dataset1, diachrDataset);
+//        System.out.println(chVersion);
+//        System.out.println(expl.fetchDiachronDatasetVersion(chVersion));
+//        System.out.println(expl.fetchChDetectVersion(dataset2));
+//        expl.createArchiveChangeSet(arch, dataset1, dataset2, null, null, true, diachrDataset);
+//        expl.terminate();
     }
 
 }

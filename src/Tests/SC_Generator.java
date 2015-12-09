@@ -2,7 +2,6 @@ package Tests;
 
 import java.io.FileInputStream;
 import java.io.FileReader;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Properties;
@@ -10,6 +9,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.diachron.detection.repositories.SesameVirtRep;
+import org.openrdf.rio.RDFFormat;
 
 /*
  * To change this template, choose Tools | Templates
@@ -63,14 +63,17 @@ public class SC_Generator {
         prop.load(inputStream);
         SesameVirtRep sesame = new SesameVirtRep(prop);
         String root = "input/changes_ontology/ontological/";
-        root = "input\\changes_ontology\\multidimensional\\";
+//        root = "input\\changes_ontology\\multidimensional\\";
         String file = root + "simple_changes.json";
-        String graph = "http://www.diachron-fp7.eu/changes/multidimensional/schema";
-        graph = "http://datamarket-4ag6/changes/schema";
-        sesame.clearGraphContents(graph);
-        System.out.println(sesame.triplesNum(graph));
-        createChangesSchema(sesame, file, graph);
+        String graph = "http://www.diachron-fp7.eu/resource/diachronicDataset/EFO_Test_Strategies/CDAAF2AE5D9F7726789EFE06C84386E8/changes/schema";
+//        graph = "http://datamarket-4ag6/changes/schema";
 //        sesame.clearGraphContents(graph);
+        System.out.println(sesame.triplesNum(graph));
+//        createChangesSchema(sesame, file, graph);
+//        sesame.clearGraphContents(graph);
+        
+        sesame.exportToFile(root+"\\ChangesOntologySchema.n3", RDFFormat.N3, graph);
+        
         System.out.println(sesame.triplesNum(graph));
         sesame.terminate();
     }

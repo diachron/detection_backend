@@ -542,7 +542,7 @@ public class CCManager {
     }
 
     /**
-     * Groups the given list of version filtes w.r.t. their presence.
+     * Groups the given list of version filters w.r.t. their presence.
      *
      * @param vfilters The list of version filters.
      */
@@ -713,17 +713,18 @@ public class CCManager {
             } else {
                 graph = "FILTER NOT EXISTS { GRAPH <v2>";
             }
-
+            int i = 0;
             if (pr == Presence.EXISTS_IN_V2 || pr == Presence.EXISTS_IN_V1) {
                 versionFilterBlock.append(graph + " {\n");
                 for (VersionFilter vFilter : group) {
                     String subject = vFilter.getSubject();
                     String predicate = vFilter.getPredicate();
                     String object = vFilter.getObject();
-                    subject = transformVariablePart(subject, ccParamsMap);
-                    predicate = transformVariablePart(predicate, ccParamsMap);
-                    object = transformVariablePart(object, ccParamsMap);
+                    subject = transformVariablePart(subject, ccParamsMap, i);
+                    predicate = transformVariablePart(predicate, ccParamsMap, i);
+                    object = transformVariablePart(object, ccParamsMap, i);
                     versionFilterBlock.append(subject + " " + predicate + " " + object + ".\n");
+                    i++;
                 }
                 versionFilterBlock.append("}\n");
             } else {
@@ -732,11 +733,12 @@ public class CCManager {
                     String subject = vFilter.getSubject();
                     String predicate = vFilter.getPredicate();
                     String object = vFilter.getObject();
-                    subject = transformVariablePart(subject, ccParamsMap);
-                    predicate = transformVariablePart(predicate, ccParamsMap);
-                    object = transformVariablePart(object, ccParamsMap);
+                    subject = transformVariablePart(subject, ccParamsMap, i);
+                    predicate = transformVariablePart(predicate, ccParamsMap, i);
+                    object = transformVariablePart(object, ccParamsMap, i);
                     versionFilterBlock.append(subject + " " + predicate + " " + object + ".");
                     versionFilterBlock.append("} }\n");
+                    i++;
                 }
             }
             sparqlQuery.append(versionFilterBlock);
@@ -825,8 +827,10 @@ public class CCManager {
         return false;
     }
 
-    private String transformVariablePart(String part, HashMap<String, String> ccParamsMap) {
-        if (part.contains(":-")) {  //the triple part is a simple change parameter
+    private String transformVariablePart(String part, HashMap<String, String> ccParamsMap, int varCnt) {
+        if (part == null) {
+            part = "?var" + varCnt;
+        } else if (part.contains(":-")) {  //the triple part is a simple change parameter
             String[] arr = part.split(":-");
             OntologicalSimpleChangesType type1 = getChangeTypeFromURI(createVarFromURI(arr[0]));
             String scParUri1 = OntologicalSimpleChangesBlocks.fetchSCParamsURIs(type1, createVarFromURI(arr[0])).get(arr[1]);

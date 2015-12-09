@@ -34,7 +34,7 @@ public class ChangesExplTest {
 //        System.out.println(exploiter.fetchChangesContainValue(resource));
 //        System.out.println(exploiter.fetchChangesBetweenVersions(v1, v2, null, null, 1000));
 
-        System.out.println(exploiter.fetchDetectedChangesNum(v1, v2, "Complex_Change"));
+        System.out.println(exploiter.fetchDetectedChangesNum(v1, v2, "Simple_Change"));
         
 //        System.out.println(exploiter.fetchChangeDefinitions("All_Simple_Changes"));
         exploiter.terminate();

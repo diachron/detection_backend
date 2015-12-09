@@ -86,6 +86,9 @@ public class DatasetsManager {
             }
             if (!jdbc.graphExists(newOntology)) {
                 jdbc.copyGraph(ontology, newOntology);
+                String assoc = ontology.replace("/changes/", "/associations/");
+                String newAssoc = newOntology.replace("/changes/", "/associations/");
+                jdbc.copyGraph(assoc, newAssoc);
                 jdbc.addTriple(datasetDst + "/changes", "http://www.w3.org/2000/01/rdf-schema#member", newOntology, datasetsGraph);
                 String v1 = expl.fetchChangeOntologyVersions(ontology).keySet().iterator().next();
                 String v2 = expl.fetchChangeOntologyVersions(ontology).get(v1);
@@ -241,6 +244,8 @@ public class DatasetsManager {
         }
         for (String ontology : ontologies) {
             jdbc.clearGraph(ontology, false);
+            String assoc = ontology.replace("/changes/", "/associations/");
+            jdbc.clearGraph(assoc, false);
         }
         query = new StringBuilder();
         query.append("sparql delete where {\n"
@@ -607,6 +612,16 @@ public class DatasetsManager {
         }
     }
 
+    public void insertDataset(String datasetUri, String datasetLabel, ModelType model) throws Exception {
+        insertDataset(datasetUri, datasetLabel);
+        String schema = getChangesSchema();
+        if (model == ModelType.ONTOLOGICAL) {
+            sesame.importFile("input\\changes_ontology\\ontological\\ChangesOntologySchema.n3", RDFFormat.N3, schema);
+        } else if (model == ModelType.MULTIDIMENSIONAL) {
+            sesame.importFile("input\\changes_ontology\\multidimensional\\ChangesOntologySchema.n3", RDFFormat.N3, schema);
+        }
+    }
+
     public void dereifyDiachronVersion(String versionUri) {
         jdbc.dereifyDiachronData(versionUri, versionUri + "_ORIG");
         if (jdbc.graphExists(versionUri + "_ORIG")) {
@@ -615,4 +630,15 @@ public class DatasetsManager {
         }
     }
 
+    public String getChangesSchema() {
+        if (datasetURI.endsWith("/")) {
+            return datasetURI + "changes/schema";
+        } else {
+            return datasetURI + "/changes/schema";
+        }
+    }
+
+    public String getDatasetURI() {
+        return datasetURI;
+    }
 }
