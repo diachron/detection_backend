@@ -34,7 +34,7 @@ public class ArchiveTest {
 
         ArchiveExploiter expl = new ArchiveExploiter(chDet);
 
-        expl.addDiachronicDataset(diachrDataset, diachrDatasetLabel, ModelType.ONTOLOGICAL);
+        expl.addDiachronicDataset(diachrDataset, diachrDatasetLabel);
         expl.addDiachronicDatasetVersion(diachrDataset, dataset1, null);
 
 //        String chVersion = expl.fetchChDetectVersion(dataset1, diachrDataset);
