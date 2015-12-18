@@ -110,6 +110,7 @@ public class DatasetsManager {
             }
             ontologies.add(results.getString(1));
         } while (results.next());
+        results.close();
     }
 
     /**
@@ -259,6 +260,7 @@ public class DatasetsManager {
         query.append("}\n"
                 + "}");
         jdbc.executeUpdateQuery(query.toString(), false);
+        results.close();
         return;
     }
 
@@ -331,6 +333,7 @@ public class DatasetsManager {
                 }
                 versions.put(results.getString(1), label);
             } while (results.next());
+            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
         }
@@ -364,6 +367,7 @@ public class DatasetsManager {
                 }
                 datasets.put(results.getString(1), label);
             } while (results.next());
+            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
         }
@@ -394,6 +398,7 @@ public class DatasetsManager {
                     return results.getString(1);
                 }
             } while (results.next());
+            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
         }
@@ -422,6 +427,7 @@ public class DatasetsManager {
                     return results.getString(1);
                 }
             } while (results.next());
+            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
         }
@@ -451,6 +457,7 @@ public class DatasetsManager {
                     return results.getString(1);
                 }
             } while (results.next());
+            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
         }
@@ -494,6 +501,7 @@ public class DatasetsManager {
                     versions.put(version, label);
                 }
             } while (results.next());
+            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
         }

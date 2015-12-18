@@ -157,6 +157,7 @@ public class ChangesDetector {
             while (result.next()) {
                 sChanges.add(result.getString(1));
             }
+            result.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage() + " occured .");
         }
@@ -283,6 +284,7 @@ public class ChangesDetector {
                 String sparql = result.getString("sparql");
                 changeQueries.add(sparql);
             }
+            result.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage() + " occured .");
             return null;

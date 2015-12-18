@@ -65,7 +65,7 @@ public class ChangesManager {
             temp = "/temp";
         }
         this.changesOntology = datasetUri + "/changes/" + oldV + "-" + newV + temp;
-        String update = "sparql insert data into <"+datasetsGraph+"> { \n"
+        String update = "sparql insert data into <" + datasetsGraph + "> { \n"
                 + "<" + datasetChanges + "> rdfs:member <" + changesOntology + ">.\n"
                 + "<" + changesOntology + "> co:old_version <" + oldVersion + ">.\n"
                 + "<" + changesOntology + "> co:new_version <" + newVersion + ">.\n" + "}";
@@ -87,7 +87,9 @@ public class ChangesManager {
                 + "} limit 1";
         try {
             ResultSet results = rep.executeSparqlQuery(query, false);
-            return results.next();
+            boolean result = results.next();
+            results.close();
+            return result;
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
         }
@@ -100,7 +102,7 @@ public class ChangesManager {
      */
     public void deleteChangesOntology() {
         rep.clearGraph(changesOntology, false);
-        String update = "sparql delete data from graph <"+datasetsGraph+"> {\n"
+        String update = "sparql delete data from graph <" + datasetsGraph + "> {\n"
                 + "<" + datasetChanges + "> rdfs:member <" + changesOntology + ">.\n"
                 + "<" + changesOntology + "> co:old_version <" + oldVersion + ">.\n"
                 + "<" + changesOntology + "> co:new_version <" + newVersion + ">.\n"

@@ -150,6 +150,7 @@ public class MCDUtils {
                 this.changesOntologies.add(results.getString(1));
             } while (results.next());
         }
+        results.close();
     }
 
     public JDBCVirtuosoRep getJDBCRepository() {

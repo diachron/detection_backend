@@ -241,6 +241,8 @@ public class JDBCVirtuosoRep {
         try {
             if (!statement.isClosed()) {
                 statement.close();
+            }
+            if (!conn.isClosed()) {
                 conn.close();
             }
         } catch (Exception ex) {

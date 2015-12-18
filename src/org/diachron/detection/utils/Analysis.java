@@ -64,6 +64,7 @@ public class Analysis {
             long number = Long.parseLong(res.getString("count"));
             changeAnalysis.put(name, number);
         }
+        res.close();
         return changeAnalysis;
     }
 
@@ -111,6 +112,7 @@ public class Analysis {
         while (res.next()) {
             return Long.parseLong(res.getString(1));
         }
+        res.close();
         return sum;
     }
 
@@ -145,6 +147,7 @@ public class Analysis {
             long number = Long.parseLong(res.getString("count"));
             changeAnalysis.put(name, number);
         }
+        res.close();
         return changeAnalysis;
     }
 
