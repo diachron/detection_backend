@@ -13,6 +13,7 @@ import java.util.List;
 import java.util.Properties;
 import org.diachron.detection.associations.AssocManager;
 import org.diachron.detection.complex_change.CCManager;
+import org.diachron.detection.exploit.ChangesExploiter;
 import org.diachron.detection.repositories.JDBCVirtuosoRep;
 import org.openrdf.repository.RepositoryException;
 
@@ -53,6 +54,7 @@ public class MCDUtils {
             ChangesManager cManager = new ChangesManager(getJDBCRepository(), datasetURI, v1, v2, false);
             String changesOntology = cManager.getChangesOntology();
             detector.setChangesOntology(changesOntology);
+            detector.getJdbc().clearGraph(detector.getChangesOntology(), false);
             if (detectAssoc) {
                 detector.setAssociationsGraph(assoc.getAssocGraph(v1, v2));
             } else {
@@ -64,6 +66,16 @@ public class MCDUtils {
             }
             detector.detectComplexChanges(v1, v2, null);
             System.out.println("-----");
+        }
+    }
+
+    public void deleteCCWithLessPriority(String changeName) throws Exception {
+        ChangesExploiter exploiter = new ChangesExploiter(getJDBCRepository(), datasetURI, true);
+        List<String> versions = exploiter.getChangesOntologies();
+        for (String version : versions) {
+            CCManager manager = new CCManager(propFile, exploiter.getChangesOntologySchema());
+            manager.deleteComplexChangeInstWithLessPr(version, changeName);
+            manager.terminate();
         }
     }
 
@@ -138,6 +150,7 @@ public class MCDUtils {
                 this.changesOntologies.add(results.getString(1));
             } while (results.next());
         }
+        results.close();
     }
 
     public JDBCVirtuosoRep getJDBCRepository() {

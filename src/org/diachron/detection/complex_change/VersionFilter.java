@@ -9,8 +9,10 @@ import java.util.List;
 import org.json.simple.JSONObject;
 
 /**
- * This class represents a Version Filter which is essentially an RDF triple which 
- * has a specific presence {@link Presence} on either the old or new version.
+ * This class represents a Version Filter which is essentially an RDF triple
+ * which has a specific presence {@link Presence} on either the old or new
+ * version.
+ *
  * @author rousakis
  */
 public class VersionFilter {
@@ -40,13 +42,13 @@ public class VersionFilter {
     public List<String> getComplexChangeParameters() {
         List<String> params = new ArrayList<>();
         //if the subject, predicate or object do not start from < or ' and do not contain :- then it is a complex change parameter
-        if (!subject.contains(":-") && !subject.startsWith("<") && !subject.startsWith("'")) {
+        if (subject != null && !subject.contains(":-") && !subject.startsWith("<") && !subject.startsWith("'")) {
             params.add(subject);
         }
-        if (!predicate.contains(":-") && !predicate.startsWith("<") && !predicate.startsWith("'")) {
+        if (predicate != null && !predicate.contains(":-") && !predicate.startsWith("<") && !predicate.startsWith("'")) {
             params.add(predicate);
         }
-        if (!object.contains(":-") && !object.startsWith("<") && !object.startsWith("'")) {
+        if (object != null && !object.contains(":-") && !object.startsWith("<") && !object.startsWith("'")) {
             params.add(object);
         }
         return params;

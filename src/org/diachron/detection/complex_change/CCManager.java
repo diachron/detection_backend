@@ -105,14 +105,13 @@ public class CCManager {
         String sparql = "select * from <" + changesOntologySchema + "> where { ?cc co:name \"" + name + "\"}";
         ResultSet results = jdbcRep.executeSparqlQuery(sparql, false);
         try {
-            if (results.next()) {
-                return false;
-            }
+            boolean result = results.next();
+            results.close();
+            return !result;
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
             return false;
         }
-        return true;
     }
 
     /**
@@ -127,14 +126,13 @@ public class CCManager {
                 + "}";
         ResultSet results = jdbcRep.executeSparqlQuery(sparql, false);
         try {
-            if (results.next()) {
-                return false;
-            }
+            boolean result = results.next();
+            results.close();
+            return !result;
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
             return false;
         }
-        return true;
     }
 
     /**
@@ -347,11 +345,13 @@ public class CCManager {
         ResultSet results = jdbcRep.executeSparqlQuery(query.toString(), false);
         try {
             if (!results.next()) {
+                results.close();
                 return false;
             }
             do {
                 ccNames.add(results.getString(1));
             } while (results.next());
+            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
         }
@@ -382,6 +382,7 @@ public class CCManager {
             while (results.next()) {
                 priority = results.getString(1);
             }
+            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
             return false;
@@ -400,6 +401,7 @@ public class CCManager {
             while (results.next()) {  //fetch cc uris with higher priority (i.e., less important)
                 cChangesUris.add(results.getString(1));
             }
+            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
             return false;
@@ -449,6 +451,7 @@ public class CCManager {
                     ccParams.add(param);
                 }
             }
+            results.close();
             if (!success) {
                 return false;
             }
@@ -542,7 +545,7 @@ public class CCManager {
     }
 
     /**
-     * Groups the given list of version filtes w.r.t. their presence.
+     * Groups the given list of version filters w.r.t. their presence.
      *
      * @param vfilters The list of version filters.
      */
@@ -713,17 +716,18 @@ public class CCManager {
             } else {
                 graph = "FILTER NOT EXISTS { GRAPH <v2>";
             }
-
+            int i = 0;
             if (pr == Presence.EXISTS_IN_V2 || pr == Presence.EXISTS_IN_V1) {
                 versionFilterBlock.append(graph + " {\n");
                 for (VersionFilter vFilter : group) {
                     String subject = vFilter.getSubject();
                     String predicate = vFilter.getPredicate();
                     String object = vFilter.getObject();
-                    subject = transformVariablePart(subject, ccParamsMap);
-                    predicate = transformVariablePart(predicate, ccParamsMap);
-                    object = transformVariablePart(object, ccParamsMap);
+                    subject = transformVariablePart(subject, ccParamsMap, i);
+                    predicate = transformVariablePart(predicate, ccParamsMap, i);
+                    object = transformVariablePart(object, ccParamsMap, i);
                     versionFilterBlock.append(subject + " " + predicate + " " + object + ".\n");
+                    i++;
                 }
                 versionFilterBlock.append("}\n");
             } else {
@@ -732,11 +736,12 @@ public class CCManager {
                     String subject = vFilter.getSubject();
                     String predicate = vFilter.getPredicate();
                     String object = vFilter.getObject();
-                    subject = transformVariablePart(subject, ccParamsMap);
-                    predicate = transformVariablePart(predicate, ccParamsMap);
-                    object = transformVariablePart(object, ccParamsMap);
+                    subject = transformVariablePart(subject, ccParamsMap, i);
+                    predicate = transformVariablePart(predicate, ccParamsMap, i);
+                    object = transformVariablePart(object, ccParamsMap, i);
                     versionFilterBlock.append(subject + " " + predicate + " " + object + ".");
                     versionFilterBlock.append("} }\n");
+                    i++;
                 }
             }
             sparqlQuery.append(versionFilterBlock);
@@ -825,8 +830,10 @@ public class CCManager {
         return false;
     }
 
-    private String transformVariablePart(String part, HashMap<String, String> ccParamsMap) {
-        if (part.contains(":-")) {  //the triple part is a simple change parameter
+    private String transformVariablePart(String part, HashMap<String, String> ccParamsMap, int varCnt) {
+        if (part == null) {
+            part = "?var" + varCnt;
+        } else if (part.contains(":-")) {  //the triple part is a simple change parameter
             String[] arr = part.split(":-");
             OntologicalSimpleChangesType type1 = getChangeTypeFromURI(createVarFromURI(arr[0]));
             String scParUri1 = OntologicalSimpleChangesBlocks.fetchSCParamsURIs(type1, createVarFromURI(arr[0])).get(arr[1]);
