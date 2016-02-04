@@ -247,8 +247,8 @@ public class SesameVirtRep {
         }
         SesameVirtRep sesame = new SesameVirtRep(prop);
 //        sesame.exportToFile("ontology.nt", RDFFormat.NTRIPLES, "http://www.ebi.ac.uk/efo/changes/2.34-2.38/temp");
-        sesame.clearGraphContents("http://www.ebi.ac.uk/efo/changes/2.34-2.38/temp");
-        sesame.importFile("ontology.nt", RDFFormat.NTRIPLES, "http://www.ebi.ac.uk/efo/changes/2.34-2.38/temp");
+//        sesame.clearGraphContents("http://www.ebi.ac.uk/efo/changes/2.34-2.38/temp");
+//        sesame.importFile("ontology.nt", RDFFormat.NTRIPLES, "http://www.ebi.ac.uk/efo/changes/2.34-2.38/temp");
 //        sesame.exportToFile("version_2.46.rdfs", RDFFormat.RDFXML, "http://www.diachron-fp7.eu/resource/recordset/efo/2.46");
 //        sesame.exportToFile("version_2.44.rdf", RDFFormat.RDFXML, "http://original/efo/2.44");
 //        sesame.exportToFile("version_2.47.rdf", RDFFormat.RDFXML, "http://original/efo/2.47");
@@ -263,6 +263,7 @@ public class SesameVirtRep {
 //        sesame.exportToFile("input\\changes_ontology\\ontological\\datamarket-dataset-associations.nt", RDFFormat.NTRIPLES, "http://datamarket-dataset");
 //        sesame.exportToFile("version_2.45.rdf", RDFFormat.RDFXML, "http://original/efo/2.45");
 //        sesame.exportToFile("version_2.46.rdf", RDFFormat.RDFXML, "http://original/efo/2.46");
+        sesame.exportToFile("swetodblp_april_2008.nt", RDFFormat.NTRIPLES, "http://vas");
 //        sesame.clearGraphContents("http://original/efo/2.45");
 //        sesame.clearGraphContents("http://original/efo/2.46");
         sesame.terminate();
