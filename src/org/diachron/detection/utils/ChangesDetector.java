@@ -236,7 +236,8 @@ public class ChangesDetector {
         for (String simpleChange : this.simpleChanges) {
             StringBuilder prefixes = new StringBuilder("PREFIX diachron: <http://www.diachron-fp7.eu/resource/>\n"
                     + "PREFIX efo:<http://www.ebi.ac.uk/efo/>\n"
-                    + "PREFIX co:<http://www.diachron-fp7.eu/changes/>\n");
+                    + "PREFIX co:<http://www.diachron-fp7.eu/changes/>"
+                    + "PREFIX qb:<http://purl.org/linked-data/cube#>\n");
             prefixes.append(IOOps.readData(simpleChangesFolder + File.separator + simpleChange));
             query = prefixes.toString();
             query = query.replaceAll("changesOntology", changesOntology);

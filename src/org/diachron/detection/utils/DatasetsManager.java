@@ -624,9 +624,9 @@ public class DatasetsManager {
         insertDataset(datasetUri, datasetLabel);
         String schema = getChangesSchema();
         if (model == ModelType.ONTOLOGICAL) {
-            sesame.importFile("input\\changes_ontology\\ontological\\ChangesOntologySchema.n3", RDFFormat.N3, schema);
+            sesame.importFile("input\\changes_ontology\\ontological\\ChangesOntologySchema.ttl", RDFFormat.TURTLE, schema);
         } else if (model == ModelType.MULTIDIMENSIONAL) {
-            sesame.importFile("input\\changes_ontology\\multidimensional\\ChangesOntologySchema.n3", RDFFormat.N3, schema);
+            sesame.importFile("input\\changes_ontology\\multidimensional\\ChangesOntologySchema.ttl", RDFFormat.TURTLE, schema);
         }
     }
 
