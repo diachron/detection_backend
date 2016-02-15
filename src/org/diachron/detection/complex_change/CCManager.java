@@ -88,6 +88,9 @@ public class CCManager {
             this.versionFilters = new LinkedHashMap<>();
         } catch (NumberFormatException ex) {
             System.out.println("Exception: " + ex.toString());
+        } finally {
+            this.jdbcRep.terminate();
+            this.sesameRepos.terminate();
         }
     }
 
@@ -322,6 +325,8 @@ public class CCManager {
         } catch (SQLException ex) {
             System.out.println(ex.toString());
             return false;
+        } finally {
+            try {if (statement != null){statement.close();}} catch (SQLException e) {e.printStackTrace();}
         }
         return true;
     }
@@ -345,15 +350,15 @@ public class CCManager {
         ResultSet results = jdbcRep.executeSparqlQuery(query.toString(), false);
         try {
             if (!results.next()) {
-                results.close();
                 return false;
             }
             do {
                 ccNames.add(results.getString(1));
             } while (results.next());
-            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
+        } finally {
+            if (results != null){try {results.close();} catch (SQLException e) {e.printStackTrace();}}
         }
         return deleteComplexChanges(changesOntology, ccNames, detectedOnly);
     }
@@ -382,10 +387,11 @@ public class CCManager {
             while (results.next()) {
                 priority = results.getString(1);
             }
-            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
             return false;
+        } finally {
+            if (results != null){try {results.close();results = null; }catch (SQLException e) {e.printStackTrace();}}
         }
         if (priority == null) {
             return false;
@@ -401,10 +407,11 @@ public class CCManager {
             while (results.next()) {  //fetch cc uris with higher priority (i.e., less important)
                 cChangesUris.add(results.getString(1));
             }
-            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
             return false;
+        } finally {
+            if (results != null){try {results.close();} catch (SQLException e) {e.printStackTrace();}}
         }
         for (String ccUri : cChangesUris) {
             deleteDetectedCCUriTriples(changesOntology, ccUri);  //delete the instances of the complex changes
@@ -451,7 +458,6 @@ public class CCManager {
                     ccParams.add(param);
                 }
             }
-            results.close();
             if (!success) {
                 return false;
             }
@@ -461,8 +467,10 @@ public class CCManager {
             }
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage() + " occured .");
-            jdbcRep.terminate();
             return false;
+        } finally {
+            try {if(results != null){results.close();}} catch (SQLException e) {e.printStackTrace();}
+            jdbcRep.terminate();
         }
         return success;
     }

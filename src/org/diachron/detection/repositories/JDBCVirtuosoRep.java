@@ -1,5 +1,6 @@
 package org.diachron.detection.repositories;
 
+
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -156,9 +157,10 @@ public class JDBCVirtuosoRep {
      * @return The number of triples.
      */
     public long triplesNum(String graph) {
+        ResultSet result = null;
         try {
             String query = "SPARQL SELECT count(*) from <" + graph + "> where {?s ?p ?o}";
-            ResultSet result = statement.executeQuery(query);
+            result = statement.executeQuery(query);
             ResultSetMetaData meta = result.getMetaData();
             int count = meta.getColumnCount();
             long triples = 0;
@@ -171,6 +173,12 @@ public class JDBCVirtuosoRep {
         } catch (SQLException ex) {
             System.out.println("Exception " + ex.getMessage() + "occured during the count of triples.");
             return 0;
+        } finally {
+            try {
+                if (result != null){result.close();}
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
     }
 
@@ -189,6 +197,13 @@ public class JDBCVirtuosoRep {
             }
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
+        } finally {
+            try {
+                System.out.println("Result set closing");
+                if (result != null){result.close();}
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
         }
         return false;
     }
@@ -239,10 +254,14 @@ public class JDBCVirtuosoRep {
     public void terminate() {
 
         try {
-            if (!statement.isClosed()) {
+            if (statement != null) {
                 statement.close();
             }
-            if (!conn.isClosed()) {
+        } catch (Exception ex) {
+            System.out.println("Exception: " + ex.getMessage() + " occured during the close of statement and connection.");
+        }
+        try {
+            if (conn != null) {
                 conn.close();
             }
         } catch (Exception ex) {

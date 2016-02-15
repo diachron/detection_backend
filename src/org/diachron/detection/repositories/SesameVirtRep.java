@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
 import java.util.Properties;
+
 import org.openrdf.model.Literal;
 import org.openrdf.model.URI;
 import org.openrdf.model.impl.URIImpl;
@@ -86,8 +87,16 @@ public class SesameVirtRep {
      */
     public void terminate() {
         try {
-            con.close();
-            repository.shutDown();
+            if (con != null) {
+                con.close();
+            }
+        } catch (RepositoryException ex) {
+            System.out.println("Exception: " + ex.getMessage() + " occured .");
+        }
+        try {
+            if (repository != null){
+                repository.shutDown();
+            }
         } catch (RepositoryException ex) {
             System.out.println("Exception: " + ex.getMessage() + " occured .");
         }

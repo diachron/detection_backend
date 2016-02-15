@@ -59,13 +59,16 @@ public class Analysis {
 //        query.append("filter (?name = 'ADD_TYPE_CLASS').");
         query.append("} ");
         ResultSet res = jdbc.executeSparqlQuery(query.toString(), false);
-        while (res.next()) {
-            String name = res.getString("name");
-            long number = Long.parseLong(res.getString("count"));
-            changeAnalysis.put(name, number);
+        try {
+            while (res.next()) {
+                String name = res.getString("name");
+                long number = Long.parseLong(res.getString("count"));
+                changeAnalysis.put(name, number);
+            }
+            return changeAnalysis;
+        } finally {
+            res.close();
         }
-        res.close();
-        return changeAnalysis;
     }
 
     /**
@@ -88,8 +91,12 @@ public class Analysis {
      */
     public static LinkedHashMap analyzeChanges(Properties prop, String changesOntolSchema, String datasetUri, String v1, String v2, String changeType, boolean tempOntology) throws Exception {
         JDBCVirtuosoRep jdbc = new JDBCVirtuosoRep(prop);
-        LinkedHashMap changeAnalysis = analyzeChanges(jdbc, changesOntolSchema, datasetUri, v1, v2, changeType, tempOntology);
-        jdbc.terminate();
+        LinkedHashMap changeAnalysis = null;
+        try {
+            changeAnalysis = analyzeChanges(jdbc, changesOntolSchema, datasetUri, v1, v2, changeType, tempOntology);
+        } finally {
+            jdbc.terminate();
+        }
         return changeAnalysis;
     }
 
@@ -109,11 +116,14 @@ public class Analysis {
                 append(">  { ?dsc a ?sc. }\n"
                         + "}");
         ResultSet res = jdbc.executeSparqlQuery(query.toString(), false);
-        while (res.next()) {
-            return Long.parseLong(res.getString(1));
+        try {
+            while (res.next()) {
+                return Long.parseLong(res.getString(1));
+            }
+            return sum;
+        } finally {
+            if(res != null){res.close();res = null;}
         }
-        res.close();
-        return sum;
     }
 
     public static LinkedHashMap<String, Long> analyzeChangesContainValue(JDBCVirtuosoRep jdbc, String changesOntolSchema, String datasetUri, String v1, String v2, String changeType, boolean tempOntology, String nodeUri) throws Exception {
@@ -142,13 +152,16 @@ public class Analysis {
 //        query.append("filter (?name = 'ADD_TYPE_CLASS').");
         query.append("} ");
         ResultSet res = jdbc.executeSparqlQuery(query.toString(), false);
-        while (res.next()) {
-            String name = res.getString("name");
-            long number = Long.parseLong(res.getString("count"));
-            changeAnalysis.put(name, number);
+        try {
+            while (res.next()) {
+                String name = res.getString("name");
+                long number = Long.parseLong(res.getString("count"));
+                changeAnalysis.put(name, number);
+            }
+            return changeAnalysis;
+        } finally {
+            if(res != null){res.close();res = null;}
         }
-        res.close();
-        return changeAnalysis;
     }
 
 }

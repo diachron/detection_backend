@@ -85,13 +85,16 @@ public class ChangesManager {
         String query = "select * from <" + changesOntology + "> where { \n"
                 + "?s ?p ?o.\n"
                 + "} limit 1";
+        ResultSet results = null;
         try {
-            ResultSet results = rep.executeSparqlQuery(query, false);
+            results = rep.executeSparqlQuery(query, false);
             boolean result = results.next();
             results.close();
             return result;
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
+        } finally {
+            if (results != null){try {results.close(); results = null;} catch (SQLException e) {e.printStackTrace();}}
         }
         return false;
     }
