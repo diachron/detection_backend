@@ -5,11 +5,6 @@ import com.hp.hpl.jena.graph.Triple;
 import com.hp.hpl.jena.query.*;
 
 import com.hp.hpl.jena.rdf.model.RDFNode;
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-
-import java.io.InputStreamReader;
-import java.util.List;
 import virtuoso.jena.driver.*;
 
 /**

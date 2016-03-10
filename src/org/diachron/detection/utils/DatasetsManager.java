@@ -99,18 +99,23 @@ public class DatasetsManager {
     }
 
     private void copyChangeOntologiesContents(String ontologySrcBase, String ontologyDstBase) throws SQLException {
+        System.out.println("Being used");
         String query = "select ?ontology from <" + datasetsGraph + "> where {\n"
                 + "<" + ontologySrcBase + "> rdfs:member ?ontology. \n"
                 + "}";
         ArrayList<String> ontologies = new ArrayList<>();
         ResultSet results = jdbc.executeSparqlQuery(query, false);
-        do {
-            if (!results.next()) {
-                return;
-            }
-            ontologies.add(results.getString(1));
-        } while (results.next());
-        results.close();
+        try {
+
+            do {
+                if (!results.next()) {
+                    return;
+                }
+                ontologies.add(results.getString(1));
+            } while (results.next());
+        } finally {
+            if(results != null){results.close(); results = null;}
+        }
     }
 
     /**
@@ -225,43 +230,47 @@ public class DatasetsManager {
     }
 
     private void deleteAssocChangesOntologies(String deletedVersionUri) throws SQLException {
-        String changesUri;
-        if (datasetURI.endsWith("/")) {
-            changesUri = datasetURI + "changes";
-        } else {
-            changesUri = datasetURI + "/changes";
+        ResultSet results = null;
+        try {
+            String changesUri;
+            if (datasetURI.endsWith("/")) {
+                changesUri = datasetURI + "changes";
+            } else {
+                changesUri = datasetURI + "/changes";
+            }
+            StringBuilder query = new StringBuilder();
+            query.append("select ?ontology from <" + datasetsGraph + "> where {\n"
+                    + "<" + changesUri + "> rdfs:member ?ontology. \n");
+            if (deletedVersionUri != null) {
+                query.append("?ontology ?p <" + deletedVersionUri + ">.\n");
+            }
+            query.append("}");
+            ArrayList<String> ontologies = new ArrayList<>();
+            results = jdbc.executeSparqlQuery(query.toString(), false);
+            while (results.next()) {
+                ontologies.add(results.getString(1));
+            }
+            for (String ontology : ontologies) {
+                jdbc.clearGraph(ontology, false);
+                String assoc = ontology.replace("/changes/", "/associations/");
+                jdbc.clearGraph(assoc, false);
+            }
+            query = new StringBuilder();
+            query.append("sparql delete where {\n"
+                    + "graph <" + datasetsGraph + "> {\n"
+                    + "<" + changesUri + "> rdfs:member ?ontology. \n"
+                    + "?ontology co:old_version ?old. \n"
+                    + "?ontology co:new_version ?new. \n");
+            if (deletedVersionUri != null) {
+                query.append("filter((?new = <" + deletedVersionUri + "> && ?old != <" + deletedVersionUri + ">) || (?new != <" + deletedVersionUri + "> && ?old = <" + deletedVersionUri + ">)).");
+            }
+            query.append("}\n"
+                    + "}");
+            jdbc.executeUpdateQuery(query.toString(), false);
+            return;
+        } finally {
+            if(results != null){results.close();}
         }
-        StringBuilder query = new StringBuilder();
-        query.append("select ?ontology from <" + datasetsGraph + "> where {\n"
-                + "<" + changesUri + "> rdfs:member ?ontology. \n");
-        if (deletedVersionUri != null) {
-            query.append("?ontology ?p <" + deletedVersionUri + ">.\n");
-        }
-        query.append("}");
-        ArrayList<String> ontologies = new ArrayList<>();
-        ResultSet results = jdbc.executeSparqlQuery(query.toString(), false);
-        while (results.next()) {
-            ontologies.add(results.getString(1));
-        }
-        for (String ontology : ontologies) {
-            jdbc.clearGraph(ontology, false);
-            String assoc = ontology.replace("/changes/", "/associations/");
-            jdbc.clearGraph(assoc, false);
-        }
-        query = new StringBuilder();
-        query.append("sparql delete where {\n"
-                + "graph <" + datasetsGraph + "> {\n"
-                + "<" + changesUri + "> rdfs:member ?ontology. \n"
-                + "?ontology co:old_version ?old. \n"
-                + "?ontology co:new_version ?new. \n");
-        if (deletedVersionUri != null) {
-            query.append("filter((?new = <" + deletedVersionUri + "> && ?old != <" + deletedVersionUri + ">) || (?new != <" + deletedVersionUri + "> && ?old = <" + deletedVersionUri + ">)).");
-        }
-        query.append("}\n"
-                + "}");
-        jdbc.executeUpdateQuery(query.toString(), false);
-        results.close();
-        return;
     }
 
     /**
@@ -321,8 +330,9 @@ public class DatasetsManager {
                 + "BIND(REPLACE(str(?version), '^.*(#|/)', \"\") AS ?num). \n"
                 + "OPTIONAL {?version rdfs:label ?label.}\n"
                 + "} order by xsd:float(?num)";
+        ResultSet results = null;
         try {
-            ResultSet results = jdbc.executeSparqlQuery(query, false);
+            results = jdbc.executeSparqlQuery(query, false);
             if (!results.next()) {
                 return versions;
             }
@@ -333,9 +343,10 @@ public class DatasetsManager {
                 }
                 versions.put(results.getString(1), label);
             } while (results.next());
-            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
+        } finally {
+            try {if(results != null){results.close();}} catch (SQLException e) {e.printStackTrace();}
         }
         return versions;
     }
@@ -355,8 +366,9 @@ public class DatasetsManager {
                 + "?dataset rdfs:label ?label."
                 + "filter (!regex(?dataset, '/changes'))."
                 + "} order by ?label";
+        ResultSet results = null;
         try {
-            ResultSet results = jdbc.executeSparqlQuery(query, false);
+            results = jdbc.executeSparqlQuery(query, false);
             if (!results.next()) {
                 return datasets;
             }
@@ -367,9 +379,10 @@ public class DatasetsManager {
                 }
                 datasets.put(results.getString(1), label);
             } while (results.next());
-            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
+        } finally {
+            try {if(results != null){results.close();}} catch (SQLException e) {e.printStackTrace();}
         }
         return datasets;
     }
@@ -388,8 +401,9 @@ public class DatasetsManager {
                 + "filter (?label = '" + datasetLabel + "').\n"
                 + "filter (!regex(?s, '/changes')).\n"
                 + "}";
+        ResultSet results = null;
         try {
-            ResultSet results = jdbc.executeSparqlQuery(query, false);
+            results = jdbc.executeSparqlQuery(query, false);
             if (!results.next()) {
                 return null;
             }
@@ -398,9 +412,10 @@ public class DatasetsManager {
                     return results.getString(1);
                 }
             } while (results.next());
-            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
+        } finally {
+            try {if(results != null){results.close();}} catch (SQLException e) {e.printStackTrace();}
         }
         return null;
     }
@@ -417,8 +432,9 @@ public class DatasetsManager {
                 + "<" + datasetURI + "> rdfs:member ?version.\n"
                 + "?version rdfs:label '" + versionLabel + "'.\n"
                 + "}";
+        ResultSet results = null;
         try {
-            ResultSet results = jdbc.executeSparqlQuery(query, false);
+            results = jdbc.executeSparqlQuery(query, false);
             if (!results.next()) {
                 return null;
             }
@@ -427,9 +443,10 @@ public class DatasetsManager {
                     return results.getString(1);
                 }
             } while (results.next());
-            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
+        } finally {
+            try {if(results != null){results.close();}} catch (SQLException e) {e.printStackTrace();}
         }
         return null;
     }
@@ -447,8 +464,9 @@ public class DatasetsManager {
                 + "filter (?s = <" + datasetUri + ">).\n"
                 + "filter (!regex(?s, '/changes')).\n"
                 + "}";
+        ResultSet results = null;
         try {
-            ResultSet results = jdbc.executeSparqlQuery(query, false);
+            results = jdbc.executeSparqlQuery(query, false);
             if (!results.next()) {
                 return null;
             }
@@ -457,9 +475,10 @@ public class DatasetsManager {
                     return results.getString(1);
                 }
             } while (results.next());
-            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
+        } finally {
+            try {if(results != null){results.close();}} catch (SQLException e) {e.printStackTrace();}
         }
         return null;
     }
@@ -484,8 +503,9 @@ public class DatasetsManager {
                 + "BIND(REPLACE(str(?version), '^.*(#|/)', \"\") AS ?num)."
                 + "OPTIONAL {?version rdfs:label ?label.}"
                 + "} order by xsd:double(?num)";
+        ResultSet results = null;
         try {
-            ResultSet results = jdbc.executeSparqlQuery(query, true);
+            results = jdbc.executeSparqlQuery(query, true);
             if (!results.next()) {
                 return versions;
             }
@@ -501,9 +521,10 @@ public class DatasetsManager {
                     versions.put(version, label);
                 }
             } while (results.next());
-            results.close();
         } catch (SQLException ex) {
             System.out.println("Exception: " + ex.getMessage());
+        } finally {
+            try {if(results != null){results.close();}} catch (SQLException e) {e.printStackTrace();}
         }
         return versions;
     }

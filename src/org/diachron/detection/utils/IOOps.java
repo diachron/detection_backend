@@ -85,8 +85,9 @@ public class IOOps {
     public static String readData(String filename) {
         File f = new File(filename);
         String s = "";
+        BufferedReader br = null;
         try {
-            BufferedReader br = new BufferedReader(new FileReader(f));
+            br = new BufferedReader(new FileReader(f));
             String line = null;
             while ((line = br.readLine()) != null) {
                 s += (line + "\n");
@@ -95,6 +96,8 @@ public class IOOps {
         } catch (Exception e) {
             System.out.println("Exception: " + e.getMessage() + " occured .");
             return null;
+        } finally {
+            try {if(br != null){br.close();}} catch (IOException e) {e.printStackTrace();}
         }
         return s;
     }
@@ -103,15 +106,18 @@ public class IOOps {
         long start = System.currentTimeMillis();
         BufferedInputStream bis = new BufferedInputStream(entity);
         FileOutputStream out = new FileOutputStream(new File(filename));
-        int size = 2048 * 1000;
-        byte[] buffer = new byte[size];
-        int count;
-        while ((count = bis.read(buffer, 0, size)) != -1) {
-            out.write(buffer, 0, count);
-            out.flush();
+        try {
+            int size = 2048 * 1000;
+            byte[] buffer = new byte[size];
+            int count;
+            while ((count = bis.read(buffer, 0, size)) != -1) {
+                out.write(buffer, 0, count);
+                out.flush();
+            }
+        } finally {
+            out.close();
+            bis.close();
         }
-        out.close();
-        bis.close();
         System.out.println("Saved XML answer: " + (System.currentTimeMillis() - start));
     }
 

@@ -127,20 +127,24 @@ public class JSONMessagesParser {
             ccDef.setCcDefError("Error in complex change name parsing.", CODE.INVALID_JSON);
             return false;
         } else {
-            SesameVirtRep sesame = new SesameVirtRep(prop);
-            String ontology;
-            if (changesOntology == null) {
-                ontology = prop.getProperty("Changes_Ontology");
-            } else {
-                ontology = changesOntology;
+            SesameVirtRep sesame = null;
+            try {
+                sesame = new SesameVirtRep(prop);
+                String ontology;
+                if (changesOntology == null) {
+                    ontology = prop.getProperty("Changes_Ontology");
+                } else {
+                    ontology = changesOntology;
+                }
+                String query = "select count(*) from <" + ontology + "> where { ?cc co:name \"" + ccName + "\"}";
+                long size = Long.parseLong(sesame.queryExec(query).next().getValue("callret-0").stringValue());
+                if (size == 1) {
+                    ccDef.setCcDefError("There already exists a complex change with the same name.", CODE.NON_UNIQUE_CC_NAME);
+                    return false;
+                }
+            }finally {
+                if (sesame != null){sesame.terminate();}
             }
-            String query = "select count(*) from <" + ontology + "> where { ?cc co:name \"" + ccName + "\"}";
-            long size = Long.parseLong(sesame.queryExec(query).next().getValue("callret-0").stringValue());
-            if (size == 1) {
-                ccDef.setCcDefError("There already exists a complex change with the same name.", CODE.NON_UNIQUE_CC_NAME);
-                return false;
-            }
-            sesame.terminate();
         }
         return true;
     }
@@ -189,7 +193,7 @@ public class JSONMessagesParser {
                 ccDef.setCcDefError("Error in complex change parameters parsing.", CODE.INVALID_JSON);
                 return ccDef;
             }
-
+            ccDef.terminate();
             ccDef = new CCManager(prop, changesOntologySchema);
             for (int i = 0; i < jsonCCParams.size(); i++) {
                 JSONObject sc = (JSONObject) jsonCCParams.get(i);
@@ -215,6 +219,9 @@ public class JSONMessagesParser {
             ccDef.groupFiltersPerPresence(versionFilter);
             return ccDef;
         } catch (Exception ex) {
+            ex.printStackTrace();
+            ccDef.terminate();
+           // ccDefNew.terminate();
             ccDef = new CCManager(prop, null);
             ccDef.setCcDefError("Error in JSON input message.", CODE.INVALID_JSON);
             return ccDef;
