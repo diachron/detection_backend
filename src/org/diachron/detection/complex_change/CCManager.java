@@ -470,7 +470,6 @@ public class CCManager {
             return false;
         } finally {
             try {if(results != null){results.close();}} catch (SQLException e) {e.printStackTrace();}
-            jdbcRep.terminate();
         }
         return success;
     }
