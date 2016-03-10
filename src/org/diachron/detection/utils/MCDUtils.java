@@ -74,8 +74,11 @@ public class MCDUtils {
         List<String> versions = exploiter.getChangesOntologies();
         for (String version : versions) {
             CCManager manager = new CCManager(propFile, exploiter.getChangesOntologySchema());
-            manager.deleteComplexChangeInstWithLessPr(version, changeName);
-            manager.terminate();
+            try {
+                manager.deleteComplexChangeInstWithLessPr(version, changeName);
+            } finally {
+                manager.terminate();
+            }
         }
     }
 
@@ -99,9 +102,10 @@ public class MCDUtils {
             }
         } catch (Exception ex) {
             System.out.println("Exception: " + ex.getMessage() + " occured .");
-        }
-        if (ccDef != null) {
-            ccDef.terminate();
+        } finally {
+            if (ccDef != null) {
+                ccDef.terminate();
+            }
         }
         return result;
     }
@@ -109,23 +113,25 @@ public class MCDUtils {
     public boolean deleteCC(String name) throws Exception {
         boolean result = false, retVal = false;
         CCManager ccDef = null;
-        ccDef = new CCManager(propFile, changesOntologySchema);
-        for (String changesOntology : changesOntologies) {
-            retVal = ccDef.deleteComplexChange(changesOntology, name, true);
+        try {
+            ccDef = new CCManager(propFile, changesOntologySchema);
+            for (String changesOntology : changesOntologies) {
+                retVal = ccDef.deleteComplexChange(changesOntology, name, true);
+                if (retVal) {
+                    result = retVal;
+                }
+            }
+            retVal = ccDef.deleteComplexChange(changesOntologySchema, name, false);
             if (retVal) {
                 result = retVal;
             }
-        }
-        retVal = ccDef.deleteComplexChange(changesOntologySchema, name, false);
-        if (retVal) {
-            result = retVal;
-        }
-
-        if (ccDef != null) {
-            ccDef.terminate();
-        }
-        if (result) {
-            detectDatasets(true);
+            if (result) {
+                detectDatasets(true);
+            }
+        }finally {
+            if (ccDef != null) {
+                ccDef.terminate();
+            }
         }
         return result;
     }
@@ -145,12 +151,17 @@ public class MCDUtils {
                 + "}  order by ?v1";
         JDBCVirtuosoRep jdbc = getJDBCRepository();
         ResultSet results = jdbc.executeSparqlQuery(query, false);
-        if (results.next()) {
-            do {
-                this.changesOntologies.add(results.getString(1));
-            } while (results.next());
+        try {
+            if (results.next()) {
+                do {
+                    this.changesOntologies.add(results.getString(1));
+                } while (results.next());
+            }
+        } finally {
+            if(results != null){
+                results.close();
+            }
         }
-        results.close();
     }
 
     public JDBCVirtuosoRep getJDBCRepository() {

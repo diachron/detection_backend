@@ -71,36 +71,46 @@ public class SCDUtils {
      * @throws Exception
      */
     public void customCompareVersions(String oldV, String newV, String[] simpleChanges, String[] complexChanges) throws Exception {
-        ChangesManager cManager = new ChangesManager(propFile, datasetURI, oldV, newV, false);
-        String ontology = cManager.getChangesOntology();
-        cManager.terminate();
-        String tmpUri = datasetURI;
-        if (datasetURI.endsWith("/")) {
-            tmpUri = datasetURI.substring(0, datasetURI.length() - 1);
+        ChangesManager cManager = null;
+        ChangesDetector detector = null;
+        try {
+            cManager = new ChangesManager(propFile, datasetURI, oldV, newV, false);
+            String ontology = cManager.getChangesOntology();
+            String tmpUri = datasetURI;
+            if (datasetURI.endsWith("/")) {
+                tmpUri = datasetURI.substring(0, datasetURI.length() - 1);
+            }
+            detector = new ChangesDetector(propFile, ontology, tmpUri + "/changes/schema", associations);
+            detector.detectSimpleChanges(oldV, newV, simpleChanges);
+            if (associations != null) {
+                detector.detectAssociations(oldV, newV);
+            }
+            if (complexChanges == null || complexChanges.length > 0) {
+                detector.detectComplexChanges(oldV, newV, complexChanges);
+            }
+        } finally {
+            cManager.terminate();
+            detector.terminate();
         }
-        ChangesDetector detector = new ChangesDetector(propFile, ontology, tmpUri + "/changes/schema", associations);
-        detector.detectSimpleChanges(oldV, newV, simpleChanges);
-        if (associations != null) {
-            detector.detectAssociations(oldV, newV);
-        }
-        if (complexChanges == null || complexChanges.length > 0) {
-            detector.detectComplexChanges(oldV, newV, complexChanges);
-        }
-        detector.terminate();
     }
 
     public void customCompareVersions(String oldV, String newV, String ontology, String[] simpleChanges, String[] complexChanges) throws Exception {
-        String tmpUri = datasetURI;
-        if (datasetURI.endsWith("/")) {
-            tmpUri = datasetURI.substring(0, datasetURI.length() - 1);
+        ChangesDetector detector = null;
+        try {
+            String tmpUri = datasetURI;
+            if (datasetURI.endsWith("/")) {
+                tmpUri = datasetURI.substring(0, datasetURI.length() - 1);
+            }
+            detector = new ChangesDetector(propFile, ontology, tmpUri + "/changes/schema", associations);
+            detector.detectAssociations(oldV, newV);
+            detector.detectSimpleChanges(oldV, newV, simpleChanges);
+            if (complexChanges == null || complexChanges.length > 0) {
+                detector.detectComplexChanges(oldV, newV, complexChanges);
+            }
+        } finally {
+            detector.terminate();
+
         }
-        ChangesDetector detector = new ChangesDetector(propFile, ontology, tmpUri + "/changes/schema", associations);
-        detector.detectAssociations(oldV, newV);
-        detector.detectSimpleChanges(oldV, newV, simpleChanges);
-        if (complexChanges == null || complexChanges.length > 0) {
-            detector.detectComplexChanges(oldV, newV, complexChanges);
-        }
-        detector.terminate();
     }
 
 }
